@@ -1,11 +1,12 @@
 package com.example.vistacuregrad
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.RadioGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -24,7 +25,7 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
 
     private var _binding: FragmentUserDrawerBinding? = null
     private val binding get() = _binding!!
-
+    private lateinit var sharedPreferences: SharedPreferences
     private val repository = AuthRepository(RetrofitClient.apiService)
     private val viewModel: UserProfileLogViewModel by viewModels {
         UserProfileLogViewModelFactory(repository, requireContext())
@@ -40,6 +41,10 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        sharedPreferences = requireActivity().getSharedPreferences("UserProfilePrefs", Context.MODE_PRIVATE)
+
+        // Load saved user data (if available)
+        loadUserProfile()
 
         // Fetch user profile when the fragment is created
         viewModel.getUserProfileLog()
@@ -80,6 +85,19 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
             } else {
                 Toast.makeText(context, "Please fill all fields correctly.", Toast.LENGTH_SHORT).show()
             }
+        }
+    }
+
+    private fun loadUserProfile() {
+        binding.firstnameUser.setText(sharedPreferences.getString("FirstName", ""))
+        binding.lastnameUser.setText(sharedPreferences.getString("LastName", ""))
+        binding.editTextText7.setText(sharedPreferences.getString("DateOfBirth", ""))
+        binding.editTextText8.setText(sharedPreferences.getString("Weight", ""))
+        binding.editTextText9.setText(sharedPreferences.getString("Height", ""))
+
+        val genderId = sharedPreferences.getInt("GenderId", -1)
+        if (genderId != -1) {
+            binding.Radiogender.check(genderId)
         }
     }
 
