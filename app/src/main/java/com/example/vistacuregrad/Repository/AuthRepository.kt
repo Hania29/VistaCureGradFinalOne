@@ -129,22 +129,30 @@ class AuthRepository(private val apiService: ApiService) {
     suspend fun deleteUserProfileLog(token: String): Response<UserProfileLogResponse> {
         return apiService.deleteUserProfileLog("Bearer $token")
     }
+
+    suspend fun getMedicalHistory(token: String): Response<MedicalHistoryLogResponse> {
+        return apiService.getMedicalHistory("Bearer $token")
+    }
+
+    suspend fun updateMedicalHistory(
+        token: String,
+        request: MedicalHistoryRequest
+    ): Response<MedicalHistoryResponse> {
+        val allergiesBody = request.allergies.toRequestBody("text/plain".toMediaTypeOrNull())
+        val chronicConditionsBody = request.chronicConditions.toRequestBody("text/plain".toMediaTypeOrNull())
+        val medicationsBody = request.medications.toRequestBody("text/plain".toMediaTypeOrNull())
+        val surgeriesBody = request.surgeries.toRequestBody("text/plain".toMediaTypeOrNull())
+        val familyHistoryBody = request.familyHistory.toRequestBody("text/plain".toMediaTypeOrNull())
+        val lastCheckupDateBody = request.lastCheckupDate.toRequestBody("text/plain".toMediaTypeOrNull())
+
+        return apiService.updateMedicalHistory(
+            token = "Bearer $token",
+            allergies = allergiesBody,
+            chronicConditions = chronicConditionsBody,
+            medications = medicationsBody,
+            surgeries = surgeriesBody,
+            familyHistory = familyHistoryBody,
+            lastCheckupDate = lastCheckupDateBody
+        )
+    }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

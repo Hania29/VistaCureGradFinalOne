@@ -2,6 +2,7 @@ package com.example.vistacuregrad.network
 
 import com.example.vistacuregrad.model.ForgotPasswordResponse
 import com.example.vistacuregrad.model.LoginResponse
+import com.example.vistacuregrad.model.MedicalHistoryLogResponse
 import com.example.vistacuregrad.model.MedicalHistoryResponse
 import com.example.vistacuregrad.model.OtpResponse
 import com.example.vistacuregrad.model.RegisterResponse
@@ -113,6 +114,25 @@ interface ApiService {
     suspend fun deleteUserProfileLog(
         @Header("Authorization") token: String
     ): Response<UserProfileLogResponse>
+
+    @GET("api/Authentication/MedicalHistory")
+    suspend fun getMedicalHistory(
+        @Header("Authorization") token: String
+    ): Response<MedicalHistoryLogResponse>
+
+    @Multipart
+    @PUT("api/Authentication/UpdateMedicalHistory")
+    suspend fun updateMedicalHistory(
+        @Header("Authorization") token: String,
+        @Part("allergies") allergies: RequestBody,
+        @Part("chronicConditions") chronicConditions: RequestBody,
+        @Part("medications") medications: RequestBody,
+        @Part("surgeries") surgeries: RequestBody,
+        @Part("familyHistory") familyHistory: RequestBody,
+        @Part("lastCheckupDate") lastCheckupDate: RequestBody
+    ): Response<MedicalHistoryResponse>
 }
+
+
 
 
