@@ -60,10 +60,10 @@ class MedicalDrawerFragment : Fragment(R.layout.fragment_medical_drawer) {
             }
         }
 
-        // Observe the medical history log response
+        /// Observe the medical history log response
         viewModel.medicalHistoryLogResponse.observe(viewLifecycleOwner) { response ->
             if (response.isSuccessful) {
-                val medicalHistory = response.body()?.message
+                val medicalHistory = response.body()?.medicalHistory
                 // Update UI with medical history data
                 medicalHistory?.let {
                     binding.Allergies.setText(it.allergies)

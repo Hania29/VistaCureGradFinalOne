@@ -130,7 +130,7 @@
         android:layout_width="280dp"
         android:layout_height="65dp"
         android:backgroundTint="@color/MedBlueBtnOutlineAndParagraph"
-        android:text="Edit MedicalHistory "
+        android:text="Edit"
         android:textColor="@color/BgAndOnBtnWhite"
         android:textSize="20sp"
         android:textStyle="bold"

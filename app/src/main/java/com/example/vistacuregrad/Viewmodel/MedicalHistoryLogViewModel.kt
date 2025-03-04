@@ -25,46 +25,21 @@ class MedicalHistoryLogViewModel(private val repository: AuthRepository, private
         viewModelScope.launch {
             try {
                 val token = getOriginalToken()
-
                 if (token.isNullOrEmpty()) {
-                    Log.e(
-                        "MedicalHistoryLogViewModel",
-                        "No original token found, please log in again."
-                    )
+                    Log.e("MedicalHistoryLogViewModel", "No token found")
                     return@launch
                 }
 
-                val response = repository.getMedicalHistory("Bearer $token")
+                val response = repository.getMedicalHistory(token)
                 _medicalHistoryLogResponse.postValue(response)
 
                 if (response.isSuccessful) {
-                    Log.d(
-                        "MedicalHistoryLogViewModel",
-                        "Medical history fetched successfully: ${response.body()?.status}"
-                    )
+                    Log.d("MedicalHistoryLogViewModel", "Response: ${response.body()}")
                 } else {
-                    when (response.code()) {
-                        401 -> Log.e("MedicalHistoryLogViewModel", "Unauthorized: Invalid token")
-                        404 -> Log.e(
-                            "MedicalHistoryLogViewModel",
-                            "Not Found: Medical history not found"
-                        )
-
-                        500 -> Log.e(
-                            "MedicalHistoryLogViewModel",
-                            "Internal Server Error: ${response.errorBody()?.string()}"
-                        )
-
-                        else -> Log.e("MedicalHistoryLogViewModel", "Error: ${response.message()}")
-                    }
+                    Log.e("MedicalHistoryLogViewModel", "Error: ${response.errorBody()?.string()}")
                 }
-
             } catch (e: Exception) {
-                Log.e(
-                    "MedicalHistoryLogViewModel",
-                    "Exception during medical history fetch: ${e.message}",
-                    e
-                )
+                Log.e("MedicalHistoryLogViewModel", "Exception: ${e.message}", e)
             }
         }
     }
@@ -82,7 +57,7 @@ class MedicalHistoryLogViewModel(private val repository: AuthRepository, private
                     return@launch
                 }
 
-                val response = repository.updateMedicalHistory("Bearer $token", request)
+                val response = repository.updateMedicalHistory(token, request)
                 _updateMedicalHistoryResponse.postValue(response)
 
                 if (response.isSuccessful) {
@@ -91,22 +66,8 @@ class MedicalHistoryLogViewModel(private val repository: AuthRepository, private
                         "Medical history updated successfully: ${response.body()?.message}"
                     )
                 } else {
-                    when (response.code()) {
-                        401 -> Log.e("MedicalHistoryLogViewModel", "Unauthorized: Invalid token")
-                        404 -> Log.e(
-                            "MedicalHistoryLogViewModel",
-                            "Not Found: Medical history not found"
-                        )
-
-                        500 -> Log.e(
-                            "MedicalHistoryLogViewModel",
-                            "Internal Server Error: ${response.errorBody()?.string()}"
-                        )
-
-                        else -> Log.e("MedicalHistoryLogViewModel", "Error: ${response.message()}")
-                    }
+                    Log.e("MedicalHistoryLogViewModel", "Error: ${response.message()}")
                 }
-
             } catch (e: Exception) {
                 Log.e(
                     "MedicalHistoryLogViewModel",
@@ -119,7 +80,8 @@ class MedicalHistoryLogViewModel(private val repository: AuthRepository, private
 
     private fun getOriginalToken(): String? {
         val sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
-        return sharedPreferences.getString("ORIGINAL_TOKEN", null)
+        val token = sharedPreferences.getString("ORIGINAL_TOKEN", null)
+        Log.d("MedicalHistoryLogViewModel", "Token: $token")
+        return token
     }
-
 }

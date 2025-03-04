@@ -1,12 +1,13 @@
 package com.example.vistacuregrad.Mainactivity
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.example.vistacuregrad.R
@@ -21,6 +22,7 @@ import java.util.*
 class UserProfile : Fragment() {
 
     private lateinit var viewModel: UserProfileViewModel
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,10 +40,16 @@ class UserProfile : Fragment() {
         val etHeight: EditText = view.findViewById(R.id.etHeight)
         val etWeight: EditText = view.findViewById(R.id.etWeight)
 
-        // ✅ FIXED: Correct ViewModel Initialization
-        val apiService = RetrofitClient.apiService  // Get ApiService instance
-        val repository = AuthRepository(apiService) // Pass ApiService to Repository
-        val factory = UserProfileViewModelFactory(repository, requireContext()) // Pass repository and context
+        // Initialize SharedPreferences
+        sharedPreferences = requireContext().getSharedPreferences("UserProfilePrefs", Context.MODE_PRIVATE)
+
+        // Load saved user data (if available)
+        loadUserProfile(etFirstName, etLastName, etDateOfBirth, rgGender, etHeight, etWeight)
+
+        // Initialize ViewModel
+        val apiService = RetrofitClient.apiService
+        val repository = AuthRepository(apiService)
+        val factory = UserProfileViewModelFactory(repository, requireContext())
         viewModel = ViewModelProvider(this, factory)[UserProfileViewModel::class.java]
 
         btnNext.setOnClickListener {
@@ -51,39 +59,16 @@ class UserProfile : Fragment() {
             val heightStr = etHeight.text.toString().trim()
             val weightStr = etWeight.text.toString().trim()
 
-            // Validate user inputs
-            if (firstName.isEmpty() || lastName.isEmpty() || dateOfBirth.isEmpty() ||
-                heightStr.isEmpty() || weightStr.isEmpty()) {
-                Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
+            if (!validateInputs(firstName, lastName, dateOfBirth, heightStr, weightStr, rgGender)) {
                 return@setOnClickListener
             }
 
-            // Validate Date of Birth format
-            if (!isValidDate(dateOfBirth)) {
-                etDateOfBirth.error = "Enter a valid date (dd/MM/yyyy)"
-                etDateOfBirth.requestFocus()
-                return@setOnClickListener
-            }
-
-            // Validate gender selection
             val selectedGenderId = rgGender.checkedRadioButtonId
-            if (selectedGenderId == -1) {
-                Toast.makeText(requireContext(), "Please select your gender", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
             val selectedGender = view.findViewById<RadioButton>(selectedGenderId).text.toString()
 
-            // Convert height and weight to double
-            val height = heightStr.toDoubleOrNull()
-            val weight = weightStr.toDoubleOrNull()
+            val height = heightStr.toDouble()
+            val weight = weightStr.toDouble()
 
-            if (height == null || height <= 0 || weight == null || weight <= 0) {
-                Toast.makeText(requireContext(), "Invalid height or weight", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
-            }
-
-            // Create user profile request object
             val request = UserProfileRequest(
                 firstName = firstName,
                 lastName = lastName,
@@ -93,25 +78,67 @@ class UserProfile : Fragment() {
                 gender = selectedGender
             )
 
-            // Call ViewModel function to create user profile
             viewModel.createUserProfile(request)
         }
 
         // Observe API response
-        viewModel.profileResponse.observe(viewLifecycleOwner, Observer { response ->
+        viewModel.profileResponse.observe(viewLifecycleOwner) { response ->
             if (response.isSuccessful) {
-                Toast.makeText(requireContext(), "Profile created successfully!", Toast.LENGTH_SHORT).show()
+                showToast("Profile created successfully!")
+
+                // Save data in SharedPreferences after successful response
+                saveUserProfile(
+                    etFirstName.text.toString(),
+                    etLastName.text.toString(),
+                    etDateOfBirth.text.toString(),
+                    rgGender.checkedRadioButtonId,
+                    etHeight.text.toString(),
+                    etWeight.text.toString()
+                )
+
                 findNavController().navigate(R.id.action_userProfile_to_medicalHistory)
             } else {
-                Toast.makeText(requireContext(), "Failed: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
+                showToast("Failed: ${response.errorBody()?.string() ?: "Unknown error"}")
             }
-        })
+        }
 
         btnBack.setOnClickListener {
             requireActivity().onBackPressed()
         }
 
         return view
+    }
+
+    // Function to validate inputs
+    private fun validateInputs(
+        firstName: String, lastName: String, dateOfBirth: String,
+        heightStr: String, weightStr: String, rgGender: RadioGroup
+    ): Boolean {
+        if (firstName.isEmpty() || lastName.isEmpty() || dateOfBirth.isEmpty() ||
+            heightStr.isEmpty() || weightStr.isEmpty()) {
+            showToast("Please fill all fields")
+            return false
+        }
+
+        if (!isValidDate(dateOfBirth)) {
+            showToast("Enter a valid date (dd/MM/yyyy)")
+            return false
+        }
+
+        if (rgGender.checkedRadioButtonId == -1) {
+            showToast("Please select your gender")
+            return false
+        }
+
+        val height = heightStr.toDoubleOrNull()
+        val weight = weightStr.toDoubleOrNull()
+
+        if (height == null || height <= 0 || weight == null || weight <= 0) {
+            showToast("Invalid height or weight")
+            return false
+        }
+
+        return true
     }
 
     // Function to validate the date format
@@ -123,5 +150,42 @@ class UserProfile : Fragment() {
         } catch (e: Exception) {
             false
         }
+    }
+
+    // Function to save user profile data in SharedPreferences
+    private fun saveUserProfile(
+        firstName: String, lastName: String, dateOfBirth: String,
+        genderId: Int, height: String, weight: String
+    ) {
+        val editor = sharedPreferences.edit()
+        editor.putString("FirstName", firstName)
+        editor.putString("LastName", lastName)
+        editor.putString("DateOfBirth", dateOfBirth)
+        editor.putInt("GenderId", genderId)
+        editor.putString("Height", height)
+        editor.putString("Weight", weight)
+        editor.apply() // Asynchronous save
+    }
+
+    // Function to load user profile data from SharedPreferences
+    private fun loadUserProfile(
+        etFirstName: EditText, etLastName: EditText, etDateOfBirth: EditText,
+        rgGender: RadioGroup, etHeight: EditText, etWeight: EditText
+    ) {
+        etFirstName.setText(sharedPreferences.getString("FirstName", ""))
+        etLastName.setText(sharedPreferences.getString("LastName", ""))
+        etDateOfBirth.setText(sharedPreferences.getString("DateOfBirth", ""))
+        etHeight.setText(sharedPreferences.getString("Height", ""))
+        etWeight.setText(sharedPreferences.getString("Weight", ""))
+
+        val genderId = sharedPreferences.getInt("GenderId", -1)
+        if (genderId != -1) {
+            rgGender.check(genderId)
+        }
+    }
+
+    // Function to show Toast messages
+    private fun showToast(message: String) {
+        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 }

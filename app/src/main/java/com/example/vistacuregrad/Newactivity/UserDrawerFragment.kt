@@ -1,6 +1,7 @@
 package com.example.vistacuregrad
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -24,7 +25,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
     private var _binding: FragmentUserDrawerBinding? = null
     private val binding get() = _binding!!
 
-    // Initialize ViewModel
     private val repository = AuthRepository(RetrofitClient.apiService)
     private val viewModel: UserProfileLogViewModel by viewModels {
         UserProfileLogViewModelFactory(repository, requireContext())
@@ -33,7 +33,7 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         _binding = FragmentUserDrawerBinding.inflate(inflater, container, false)
         return binding.root
     }
@@ -48,11 +48,15 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
         viewModel.profileLogResponse.observe(viewLifecycleOwner, Observer { response ->
             if (response.isSuccessful) {
                 val profileData = response.body()?.data
-                // Update UI with profileData
-                updateUIWithProfileData(profileData)
+                if (profileData != null) {
+                    updateUIWithProfileData(profileData)
+                    Log.d("UserDrawerFragment", "Fetched user data: $profileData")
+                } else {
+                    Log.e("UserDrawerFragment", "Response successful but data is null")
+                }
             } else {
-                // Handle error
-                Toast.makeText(context, "Failed to fetch profile: ${response.message()}", Toast.LENGTH_SHORT).show()
+                Log.e("UserDrawerFragment", "Failed to fetch profile: ${response.errorBody()?.string()}")
+                Toast.makeText(context, "Failed to fetch profile", Toast.LENGTH_SHORT).show()
             }
         })
 
@@ -62,7 +66,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
 
         binding.btnNext.setOnClickListener {
             if (validateFields()) {
-                // Create a UserProfileLogRequest object with the updated data
                 val updateRequest = UserProfileLogRequest(
                     firstName = binding.firstnameUser.text.toString().trim(),
                     lastName = binding.lastnameUser.text.toString().trim(),
@@ -72,9 +75,7 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
                     gender = getSelectedGender()
                 )
 
-                // Update user profile
                 viewModel.updateUserProfileLog(updateRequest)
-
                 Toast.makeText(context, "Profile updated successfully.", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(context, "Please fill all fields correctly.", Toast.LENGTH_SHORT).show()
@@ -82,19 +83,17 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
         }
     }
 
-    // Update UI with fetched profile data
     private fun updateUIWithProfileData(profileData: UserProfileLogData?) {
         profileData?.let {
-            binding.firstnameUser.setText(it.firstName)
-            binding.lastnameUser.setText(it.lastName)
-            binding.editTextText7.setText(it.dateOfBirth)
-            binding.editTextText8.setText(it.weight.toString())
-            binding.editTextText9.setText(it.height.toString())
+            binding.firstnameUser.setText(it.firstName ?: "")
+            binding.lastnameUser.setText(it.lastName ?: "")
+            binding.editTextText7.setText(it.dateOfBirth ?: "")
+            binding.editTextText8.setText(it.weight?.toString() ?: "")
+            binding.editTextText9.setText(it.height?.toString() ?: "")
             setSelectedGender(it.gender)
         }
     }
 
-    // Get selected gender from RadioGroup
     private fun getSelectedGender(): String? {
         return when (binding.Radiogender.checkedRadioButtonId) {
             R.id.rbMale -> "Male"
@@ -103,7 +102,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
         }
     }
 
-    // Set selected gender in RadioGroup
     private fun setSelectedGender(gender: String?) {
         when (gender) {
             "Male" -> binding.Radiogender.check(R.id.rbMale)
@@ -111,7 +109,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
         }
     }
 
-    // Validation
     private fun validateFields(): Boolean {
         val firstname = binding.firstnameUser.text.toString().trim()
         val lastname = binding.lastnameUser.text.toString().trim()
@@ -121,7 +118,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
 
         var isValid = true
 
-        // First name validation (not empty and only letters)
         if (firstname.isEmpty()) {
             binding.firstnameUser.error = "This field is required"
             isValid = false
@@ -130,7 +126,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
             isValid = false
         }
 
-        // Last name validation (not empty and only letters)
         if (lastname.isEmpty()) {
             binding.lastnameUser.error = "This field is required"
             isValid = false
@@ -139,8 +134,7 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
             isValid = false
         }
 
-        // Date of birth validation (not empty and correct format MM/DD/YYYY)
-        val datePattern = Pattern.compile("^\\d{2}/\\d{2}/\\d{4}$")  // Format MM/DD/YYYY
+        val datePattern = Pattern.compile("^\\d{1,2}/\\d{1,2}/\\d{4}$")
         if (birthday.isEmpty()) {
             binding.editTextText7.error = "This field is required"
             isValid = false
@@ -149,7 +143,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
             isValid = false
         }
 
-        // Weight validation (not empty and only numbers)
         if (weight.isEmpty()) {
             binding.editTextText8.error = "This field is required"
             isValid = false
@@ -158,7 +151,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
             isValid = false
         }
 
-        // Height validation (not empty and only numbers)
         if (height.isEmpty()) {
             binding.editTextText9.error = "This field is required"
             isValid = false
@@ -167,10 +159,7 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
             isValid = false
         }
 
-        // Gender validation (not empty and only letters)
-        val genderGroup: RadioGroup = binding.Radiogender
-        val selectedGenderId = genderGroup.checkedRadioButtonId
-        if (selectedGenderId == -1) {
+        if (binding.Radiogender.checkedRadioButtonId == -1) {
             Toast.makeText(context, "Please select a gender", Toast.LENGTH_SHORT).show()
             isValid = false
         }
@@ -180,6 +169,6 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        _binding = null  // Avoid memory leaks by setting binding to null after view is destroyed
+        _binding = null
     }
 }
