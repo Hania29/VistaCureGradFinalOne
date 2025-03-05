@@ -100,7 +100,7 @@ class UserProfile : Fragment() {
 
             // Save to SharedPreferences and verify
             saveUserProfile(firstName, lastName, dateOfBirth, selectedGenderId, heightStr, weightStr)
-            verifySharedPreferences() // Debug step
+            verifySharedPreferences()
         }
 
         // Observe API response
@@ -119,7 +119,7 @@ class UserProfile : Fragment() {
                     etHeight.text.toString().trim(),
                     etWeight.text.toString().trim()
                 )
-                verifySharedPreferences() // Debug step
+                verifySharedPreferences()
 
                 Log.d("UserProfile", "Navigating to medical history")
                 findNavController().navigate(R.id.action_userProfile_to_medicalHistory)
@@ -177,7 +177,6 @@ class UserProfile : Fragment() {
         }
     }
 
-    // In UserProfile.kt, update saveUserProfile to include more debug info:
     private fun saveUserProfile(
         firstName: String,
         lastName: String,
@@ -219,6 +218,15 @@ class UserProfile : Fragment() {
         val weight = sharedPreferences.getString("Weight", "") ?: ""
         val genderId = sharedPreferences.getInt("GenderId", -1)
 
+        Log.d("UserProfile", "Before loading to UI: " +
+                "FirstName=$firstName, " +
+                "LastName=$lastName, " +
+                "DateOfBirth=$dateOfBirth, " +
+                "GenderId=$genderId, " +
+                "Height=$height, " +
+                "Weight=$weight")
+
+        // Set values and force UI update
         etFirstName.setText(firstName)
         etLastName.setText(lastName)
         etDateOfBirth.setText(dateOfBirth)
@@ -228,13 +236,39 @@ class UserProfile : Fragment() {
             rgGender.check(genderId)
         }
 
-        Log.d("UserProfile", "Loaded from SharedPreferences: " +
-                "FirstName=$firstName, " +
-                "LastName=$lastName, " +
-                "DateOfBirth=$dateOfBirth, " +
-                "GenderId=$genderId, " +
-                "Height=$height, " +
-                "Weight=$weight")
+        // Force redraw
+        etFirstName.post {
+            etFirstName.setText(firstName)
+            etFirstName.invalidate()
+        }
+        etLastName.post {
+            etLastName.setText(lastName)
+            etLastName.invalidate()
+        }
+        etDateOfBirth.post {
+            etDateOfBirth.setText(dateOfBirth)
+            etDateOfBirth.invalidate()
+        }
+        etHeight.post {
+            etHeight.setText(height)
+            etHeight.invalidate()
+        }
+        etWeight.post {
+            etWeight.setText(weight)
+            etWeight.invalidate()
+        }
+        rgGender.post {
+            if (genderId != -1) rgGender.check(genderId)
+            rgGender.invalidate()
+        }
+
+        Log.d("UserProfile", "After loading to UI: " +
+                "etFirstName=${etFirstName.text}, " +
+                "etLastName=${etLastName.text}, " +
+                "etDateOfBirth=${etDateOfBirth.text}, " +
+                "rgGender.checked=${rgGender.checkedRadioButtonId}, " +
+                "etHeight=${etHeight.text}, " +
+                "etWeight=${etWeight.text}")
     }
 
     private fun verifySharedPreferences() {
