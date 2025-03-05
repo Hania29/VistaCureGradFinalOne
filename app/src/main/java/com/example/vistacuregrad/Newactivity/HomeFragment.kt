@@ -17,6 +17,7 @@ import androidx.core.view.GravityCompat
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
+import com.example.vistacuregrad.Mainactivity.MainActivity
 import com.example.vistacuregrad.Repository.AuthRepository
 import com.example.vistacuregrad.databinding.FragmentHomeBinding
 import com.example.vistacuregrad.network.RetrofitClient
@@ -44,13 +45,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         setupUI()
 
-        // Restore detection result if navigating between fragments
         if (savedInstanceState != null) {
             savedInstanceState.getString("detection_result")?.let {
                 binding.detectionResult.text = it
             }
         } else {
-            // Use default message when the app is restarted
             binding.detectionResult.text = getString(R.string.default_detection_message)
         }
     }
@@ -66,9 +65,47 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun handleNavigation(menuItem: MenuItem): Boolean {
-        findNavController().navigate(menuItem.itemId)
-        binding.drawerLayout.closeDrawer(GravityCompat.START)
-        return true
+        when (menuItem.itemId) {
+            R.id.logout_drawer -> {
+                showLogoutDialog()
+                return true
+            }
+            else -> {
+                findNavController().navigate(menuItem.itemId)
+                binding.drawerLayout.closeDrawer(GravityCompat.START)
+                return true
+            }
+        }
+    }
+
+    private fun showLogoutDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.fragment_logout, null) // Inflate your XML
+        val alertDialog = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
+            .setView(dialogView)
+            .create()
+
+        // Find views from the custom dialog
+        val yesButton = dialogView.findViewById<Button>(R.id.alert_yes)
+        val noButton = dialogView.findViewById<Button>(R.id.alert_no)
+
+        yesButton.setOnClickListener {
+            alertDialog.dismiss()
+            logoutAndRestart()
+        }
+
+        noButton.setOnClickListener {
+            alertDialog.dismiss()
+        }
+
+        alertDialog.show()
+    }
+
+
+    private fun logoutAndRestart() {
+        val intent = Intent(requireContext(), MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     private fun handleBottomNavigation(item: MenuItem): Boolean {
@@ -113,7 +150,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             }
 
             binding.detectionResult.text = message
-
             saveDetectionResult(message)
         }
     }
@@ -121,29 +157,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     private fun saveDetectionResult(result: String) {
         val sharedPreferences = requireContext().getSharedPreferences("vistacure_prefs", Context.MODE_PRIVATE)
         sharedPreferences.edit().putString("detection_result", result).apply()
-    }
-
-    private fun getSavedDetectionResult(): String {
-        val sharedPreferences = requireContext().getSharedPreferences("vistacure_prefs", Context.MODE_PRIVATE)
-        return sharedPreferences.getString("detection_result", getString(R.string.default_detection_message))
-            ?: getString(R.string.default_detection_message)
-    }
-
-    private fun showDetectionResultsDialog(message: String) {
-        val dialogView = layoutInflater.inflate(R.layout.custom_alert_dialog, null)
-        val alertDialog = AlertDialog.Builder(requireContext())
-            .setView(dialogView)
-            .create()
-
-        val title = dialogView.findViewById<TextView>(R.id.alert_title)
-        val messageText = dialogView.findViewById<TextView>(R.id.alert_message)
-        val closeButton = dialogView.findViewById<Button>(R.id.alert_close)
-
-        title.text = "Result"
-        messageText.text = message
-
-        closeButton.setOnClickListener { alertDialog.dismiss() }
-        alertDialog.show()
     }
 
     private fun getFileFromUri(context: Context, uri: Uri): File? {

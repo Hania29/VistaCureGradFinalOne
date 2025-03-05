@@ -32,6 +32,9 @@
         <action
             android:id="@+id/action_homeFragment_to_historyFragment"
             app:destination="@id/historyFragment" />
+        <action
+            android:id="@+id/action_homeFragment_to_logout"
+            app:destination="@id/logout" />
     </fragment>
     <fragment
         android:id="@+id/userDrawer"
@@ -76,5 +79,10 @@
             android:id="@+id/action_historyFragment_to_chatBotFragment"
             app:destination="@id/chatBotFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/logout"
+        android:name="com.example.vistacuregrad.Newactivity.LogoutFragment"
+        android:label="fragment_logout"
+        tools:layout="@layout/fragment_logout" />
 
 </navigation>
