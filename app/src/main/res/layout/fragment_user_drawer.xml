@@ -71,7 +71,7 @@
         android:drawableStart="@drawable/gift_calendar"
         android:drawablePadding="15dp"
         android:ems="17"
-        android:hint="BirthDate"
+        android:hint="Birth Date"
         android:inputType="date"
         app:layout_constraintEnd_toEndOf="@+id/lastname_user"
         app:layout_constraintStart_toStartOf="@+id/firstname_user"
@@ -95,7 +95,7 @@
             android:drawablePadding="15dp"
             android:ems="17"
             android:hint="Weight"
-            android:inputType="number" /> <!-- Removed contentDescription -->
+            android:inputType="number" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -105,8 +105,6 @@
             android:textColor="@color/DarkBlueMainTitle"
             android:textSize="18sp" />
     </LinearLayout>
-
-    <!-- Height Input -->
 
     <LinearLayout
         android:id="@+id/linearLayout3"
@@ -127,7 +125,7 @@
             android:drawablePadding="15dp"
             android:ems="17"
             android:hint="Height"
-            android:inputType="numberDecimal" /> <!-- Removed contentDescription -->
+            android:inputType="numberDecimal" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -155,6 +153,7 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout4"
         app:layout_constraintVertical_bias="0.0" />
 
+
     <RadioGroup
         android:id="@+id/Radiogender"
         android:layout_width="wrap_content"
@@ -163,13 +162,14 @@
         android:layout_marginTop="32dp"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.567"
         app:layout_constraintStart_toEndOf="@+id/drGender"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout4">
 
         <RadioButton
             android:id="@+id/rbMale"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:text="Male"
             android:textColor="@color/DarkBlueMainTitle"
             android:textSize="18sp" />
@@ -178,6 +178,7 @@
             android:id="@+id/rbFemale"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
             android:text="Female"
             android:textColor="@color/DarkBlueMainTitle"
             android:textSize="18sp" />
