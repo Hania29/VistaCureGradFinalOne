@@ -3,6 +3,7 @@ package com.example.vistacuregrad.Mainactivity
 import android.content.Context
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -23,6 +24,7 @@ class UserProfile : Fragment() {
 
     private lateinit var viewModel: UserProfileViewModel
     private lateinit var sharedPreferences: SharedPreferences
+    private var isResponseHandled = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,10 +42,18 @@ class UserProfile : Fragment() {
         val etHeight: EditText = view.findViewById(R.id.etHeight)
         val etWeight: EditText = view.findViewById(R.id.etWeight)
 
+        Log.d("UserProfile", "UI initialized: " +
+                "etFirstName=${etFirstName != null}, " +
+                "etLastName=${etLastName != null}, " +
+                "etDateOfBirth=${etDateOfBirth != null}, " +
+                "etHeight=${etHeight != null}, " +
+                "etWeight=${etWeight != null}, " +
+                "rgGender=${rgGender != null}")
+
         // Initialize SharedPreferences
         sharedPreferences = requireContext().getSharedPreferences("UserProfilePrefs", Context.MODE_PRIVATE)
 
-        // Load saved user data (if available)
+        // Load saved user data
         loadUserProfile(etFirstName, etLastName, etDateOfBirth, rgGender, etHeight, etWeight)
 
         // Initialize ViewModel
@@ -58,6 +68,13 @@ class UserProfile : Fragment() {
             val dateOfBirth = etDateOfBirth.text.toString().trim()
             val heightStr = etHeight.text.toString().trim()
             val weightStr = etWeight.text.toString().trim()
+
+            Log.d("UserProfile", "Next clicked: " +
+                    "firstName=$firstName, " +
+                    "lastName=$lastName, " +
+                    "dateOfBirth=$dateOfBirth, " +
+                    "heightStr=$heightStr, " +
+                    "weightStr=$weightStr")
 
             if (!validateInputs(firstName, lastName, dateOfBirth, heightStr, weightStr, rgGender)) {
                 return@setOnClickListener
@@ -78,27 +95,37 @@ class UserProfile : Fragment() {
                 gender = selectedGender
             )
 
+            isResponseHandled = false
             viewModel.createUserProfile(request)
+
+            // Save to SharedPreferences and verify
+            saveUserProfile(firstName, lastName, dateOfBirth, selectedGenderId, heightStr, weightStr)
+            verifySharedPreferences() // Debug step
         }
 
         // Observe API response
         viewModel.profileResponse.observe(viewLifecycleOwner) { response ->
-            if (response.isSuccessful) {
+            Log.d("UserProfile", "Response received: isSuccessful=${response.isSuccessful}")
+            if (!isResponseHandled && response.isSuccessful) {
+                isResponseHandled = true
                 showToast("Profile created successfully!")
 
-                // Save data in SharedPreferences after successful response
+                // Save data again after successful API response
                 saveUserProfile(
-                    etFirstName.text.toString(),
-                    etLastName.text.toString(),
-                    etDateOfBirth.text.toString(),
+                    etFirstName.text.toString().trim(),
+                    etLastName.text.toString().trim(),
+                    etDateOfBirth.text.toString().trim(),
                     rgGender.checkedRadioButtonId,
-                    etHeight.text.toString(),
-                    etWeight.text.toString()
+                    etHeight.text.toString().trim(),
+                    etWeight.text.toString().trim()
                 )
+                verifySharedPreferences() // Debug step
 
+                Log.d("UserProfile", "Navigating to medical history")
                 findNavController().navigate(R.id.action_userProfile_to_medicalHistory)
-            } else {
+            } else if (!response.isSuccessful) {
                 showToast("Failed: ${response.errorBody()?.string() ?: "Unknown error"}")
+                Log.e("UserProfile", "API call failed: ${response.errorBody()?.string()}")
             }
         }
 
@@ -109,7 +136,6 @@ class UserProfile : Fragment() {
         return view
     }
 
-    // Function to validate inputs
     private fun validateInputs(
         firstName: String, lastName: String, dateOfBirth: String,
         heightStr: String, weightStr: String, rgGender: RadioGroup
@@ -141,7 +167,6 @@ class UserProfile : Fragment() {
         return true
     }
 
-    // Function to validate the date format
     private fun isValidDate(date: String): Boolean {
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         dateFormat.isLenient = false
@@ -152,10 +177,14 @@ class UserProfile : Fragment() {
         }
     }
 
-    // Function to save user profile data in SharedPreferences
+    // In UserProfile.kt, update saveUserProfile to include more debug info:
     private fun saveUserProfile(
-        firstName: String, lastName: String, dateOfBirth: String,
-        genderId: Int, height: String, weight: String
+        firstName: String,
+        lastName: String,
+        dateOfBirth: String,
+        genderId: Int,
+        height: String,
+        weight: String
     ) {
         val editor = sharedPreferences.edit()
         editor.putString("FirstName", firstName)
@@ -164,27 +193,66 @@ class UserProfile : Fragment() {
         editor.putInt("GenderId", genderId)
         editor.putString("Height", height)
         editor.putString("Weight", weight)
-        editor.apply() // Asynchronous save
+        val success = editor.commit()
+        Log.d("UserProfile", "Saved to SharedPreferences: " +
+                "FirstName=$firstName, " +
+                "LastName=$lastName, " +
+                "DateOfBirth=$dateOfBirth, " +
+                "GenderId=$genderId, " +
+                "Height=$height, " +
+                "Weight=$weight, " +
+                "CommitSuccess=$success")
     }
 
-    // Function to load user profile data from SharedPreferences
     private fun loadUserProfile(
-        etFirstName: EditText, etLastName: EditText, etDateOfBirth: EditText,
-        rgGender: RadioGroup, etHeight: EditText, etWeight: EditText
+        etFirstName: EditText,
+        etLastName: EditText,
+        etDateOfBirth: EditText,
+        rgGender: RadioGroup,
+        etHeight: EditText,
+        etWeight: EditText
     ) {
-        etFirstName.setText(sharedPreferences.getString("FirstName", ""))
-        etLastName.setText(sharedPreferences.getString("LastName", ""))
-        etDateOfBirth.setText(sharedPreferences.getString("DateOfBirth", ""))
-        etHeight.setText(sharedPreferences.getString("Height", ""))
-        etWeight.setText(sharedPreferences.getString("Weight", ""))
-
+        val firstName = sharedPreferences.getString("FirstName", "") ?: ""
+        val lastName = sharedPreferences.getString("LastName", "") ?: ""
+        val dateOfBirth = sharedPreferences.getString("DateOfBirth", "") ?: ""
+        val height = sharedPreferences.getString("Height", "") ?: ""
+        val weight = sharedPreferences.getString("Weight", "") ?: ""
         val genderId = sharedPreferences.getInt("GenderId", -1)
+
+        etFirstName.setText(firstName)
+        etLastName.setText(lastName)
+        etDateOfBirth.setText(dateOfBirth)
+        etHeight.setText(height)
+        etWeight.setText(weight)
         if (genderId != -1) {
             rgGender.check(genderId)
         }
+
+        Log.d("UserProfile", "Loaded from SharedPreferences: " +
+                "FirstName=$firstName, " +
+                "LastName=$lastName, " +
+                "DateOfBirth=$dateOfBirth, " +
+                "GenderId=$genderId, " +
+                "Height=$height, " +
+                "Weight=$weight")
     }
 
-    // Function to show Toast messages
+    private fun verifySharedPreferences() {
+        val firstName = sharedPreferences.getString("FirstName", "N/A") ?: "N/A"
+        val lastName = sharedPreferences.getString("LastName", "N/A") ?: "N/A"
+        val dateOfBirth = sharedPreferences.getString("DateOfBirth", "N/A") ?: "N/A"
+        val height = sharedPreferences.getString("Height", "N/A") ?: "N/A"
+        val weight = sharedPreferences.getString("Weight", "N/A") ?: "N/A"
+        val genderId = sharedPreferences.getInt("GenderId", -1)
+        Log.d("UserProfile", "Verified SharedPreferences contents: " +
+                "FirstName=$firstName, " +
+                "LastName=$lastName, " +
+                "DateOfBirth=$dateOfBirth, " +
+                "GenderId=$genderId, " +
+                "Height=$height, " +
+                "Weight=$weight")
+    }
+
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }

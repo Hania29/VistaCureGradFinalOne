@@ -1,5 +1,7 @@
 package com.example.vistacuregrad
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import com.example.vistacuregrad.databinding.FragmentMedicalDrawerBinding
+import com.example.vistacuregrad.model.MedicalHistoryData
 import com.example.vistacuregrad.model.MedicalHistoryRequest
 import com.example.vistacuregrad.viewmodel.MedicalHistoryLogViewModel
 import com.example.vistacuregrad.viewmodel.MedicalHistoryLogViewModelFactory
@@ -18,8 +21,8 @@ class MedicalDrawerFragment : Fragment(R.layout.fragment_medical_drawer) {
 
     private var _binding: FragmentMedicalDrawerBinding? = null
     private val binding get() = _binding!!
+    private lateinit var sharedPreferences: SharedPreferences
 
-    // Initialize ViewModel using the factory
     private val viewModel: MedicalHistoryLogViewModel by viewModels {
         val repository = (requireActivity().application as MyApplication).repository
         MedicalHistoryLogViewModelFactory(repository, requireContext())
@@ -30,20 +33,22 @@ class MedicalDrawerFragment : Fragment(R.layout.fragment_medical_drawer) {
         savedInstanceState: Bundle?
     ): View? {
         _binding = FragmentMedicalDrawerBinding.inflate(inflater, container, false)
+        sharedPreferences = requireContext().getSharedPreferences("MedicalHistoryPrefs", Context.MODE_PRIVATE)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        // Set up click listeners
+        // Load saved data
+        loadMedicalHistory()
+
         binding.btnBack.setOnClickListener {
             findNavController().navigateUp()
         }
 
         binding.btnNext.setOnClickListener {
             if (validateFields()) {
-                // Create a MedicalHistoryRequest object from the input fields
                 val request = MedicalHistoryRequest(
                     allergies = binding.Allergies.text.toString().trim(),
                     chronicConditions = binding.chronicConditions.text.toString().trim(),
@@ -53,45 +58,88 @@ class MedicalDrawerFragment : Fragment(R.layout.fragment_medical_drawer) {
                     lastCheckupDate = binding.lastcheckup.text.toString().trim()
                 )
 
-                // Call the ViewModel to update medical history
                 viewModel.updateMedicalHistory(request)
+                // Save to SharedPreferences
+                saveMedicalHistory(
+                    binding.Allergies.text.toString().trim(),
+                    binding.chronicConditions.text.toString().trim(),
+                    binding.medication.text.toString().trim(),
+                    binding.surgeries.text.toString().trim(),
+                    binding.familyhistory.text.toString().trim(),
+                    binding.lastcheckup.text.toString().trim()
+                )
             } else {
                 Toast.makeText(context, "Please fill all fields correctly.", Toast.LENGTH_SHORT).show()
             }
         }
 
-        /// Observe the medical history log response
+        // Observe the medical history log response
         viewModel.medicalHistoryLogResponse.observe(viewLifecycleOwner) { response ->
             if (response.isSuccessful) {
                 val medicalHistory = response.body()?.medicalHistory
-                // Update UI with medical history data
                 medicalHistory?.let {
-                    binding.Allergies.setText(it.allergies)
-                    binding.chronicConditions.setText(it.chronicConditions)
-                    binding.medication.setText(it.medications)
-                    binding.surgeries.setText(it.surgeries)
-                    binding.familyhistory.setText(it.familyHistory)
-                    binding.lastcheckup.setText(it.lastCheckupDate)
+                    updateUIWithMedicalHistory(it)
+                    // Save fetched data to SharedPreferences
+                    saveMedicalHistory(
+                        it.allergies,
+                        it.chronicConditions,
+                        it.medications,
+                        it.surgeries,
+                        it.familyHistory,
+                        it.lastCheckupDate
+                    )
                 }
             } else {
-                // Handle error
                 Toast.makeText(context, "Failed to fetch medical history.", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Observe the update medical history response
+        // Observe the update response
         viewModel.updateMedicalHistoryResponse.observe(viewLifecycleOwner) { response ->
             if (response.isSuccessful) {
-                // Handle successful update
                 Toast.makeText(context, "Medical history updated successfully.", Toast.LENGTH_SHORT).show()
             } else {
-                // Handle error
                 Toast.makeText(context, "Failed to update medical history.", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Fetch medical history when the fragment is created
         viewModel.getMedicalHistory()
+    }
+
+    private fun saveMedicalHistory(
+        allergies: String,
+        chronicConditions: String,
+        medications: String,
+        surgeries: String,
+        familyHistory: String,
+        lastCheckupDate: String
+    ) {
+        val editor = sharedPreferences.edit()
+        editor.putString("Allergies", allergies)
+        editor.putString("ChronicConditions", chronicConditions)
+        editor.putString("Medications", medications)
+        editor.putString("Surgeries", surgeries)
+        editor.putString("FamilyHistory", familyHistory)
+        editor.putString("LastCheckupDate", lastCheckupDate)
+        editor.apply()
+    }
+
+    private fun loadMedicalHistory() {
+        binding.Allergies.setText(sharedPreferences.getString("Allergies", ""))
+        binding.chronicConditions.setText(sharedPreferences.getString("ChronicConditions", ""))
+        binding.medication.setText(sharedPreferences.getString("Medications", ""))
+        binding.surgeries.setText(sharedPreferences.getString("Surgeries", ""))
+        binding.familyhistory.setText(sharedPreferences.getString("FamilyHistory", ""))
+        binding.lastcheckup.setText(sharedPreferences.getString("LastCheckupDate", ""))
+    }
+
+    private fun updateUIWithMedicalHistory(medicalHistory: MedicalHistoryData) {
+        binding.Allergies.setText(medicalHistory.allergies)
+        binding.chronicConditions.setText(medicalHistory.chronicConditions)
+        binding.medication.setText(medicalHistory.medications)
+        binding.surgeries.setText(medicalHistory.surgeries)
+        binding.familyhistory.setText(medicalHistory.familyHistory)
+        binding.lastcheckup.setText(medicalHistory.lastCheckupDate)
     }
 
     private fun validateFields(): Boolean {

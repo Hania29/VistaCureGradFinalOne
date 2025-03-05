@@ -36,28 +36,36 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
         savedInstanceState: Bundle?
     ): View {
         _binding = FragmentUserDrawerBinding.inflate(inflater, container, false)
+        sharedPreferences = requireActivity().getSharedPreferences("UserProfilePrefs", Context.MODE_PRIVATE)
         return binding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        sharedPreferences = requireActivity().getSharedPreferences("UserProfilePrefs", Context.MODE_PRIVATE)
 
-        // Load saved user data (if available)
+        // Load saved user data
         loadUserProfile()
 
-        // Fetch user profile when the fragment is created
+        // Fetch user profile
         viewModel.getUserProfileLog()
 
         // Observe the response
         viewModel.profileLogResponse.observe(viewLifecycleOwner, Observer { response ->
             if (response.isSuccessful) {
                 val profileData = response.body()?.data
-                if (profileData != null) {
+                if (profileData != null && profileData.firstName != null) { // Check for non-null data
                     updateUIWithProfileData(profileData)
+                    saveUserProfile(
+                        profileData.firstName,
+                        profileData.lastName ?: "",
+                        profileData.dateOfBirth ?: "",
+                        binding.Radiogender.checkedRadioButtonId,
+                        profileData.height.toString(),
+                        profileData.weight.toString()
+                    )
                     Log.d("UserDrawerFragment", "Fetched user data: $profileData")
                 } else {
-                    Log.e("UserDrawerFragment", "Response successful but data is null")
+                    Log.e("UserDrawerFragment", "Response successful but data is null or incomplete")
                 }
             } else {
                 Log.e("UserDrawerFragment", "Failed to fetch profile: ${response.errorBody()?.string()}")
@@ -81,6 +89,17 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
                 )
 
                 viewModel.updateUserProfileLog(updateRequest)
+
+                // Save to SharedPreferences when updating
+                saveUserProfile(
+                    binding.firstnameUser.text.toString().trim(),
+                    binding.lastnameUser.text.toString().trim(),
+                    binding.editTextText7.text.toString().trim(),
+                    binding.Radiogender.checkedRadioButtonId,
+                    binding.editTextText9.text.toString().trim(),
+                    binding.editTextText8.text.toString().trim()
+                )
+
                 Toast.makeText(context, "Profile updated successfully.", Toast.LENGTH_SHORT).show()
             } else {
                 Toast.makeText(context, "Please fill all fields correctly.", Toast.LENGTH_SHORT).show()
@@ -88,17 +107,47 @@ class UserDrawerFragment : Fragment(R.layout.fragment_user_drawer) {
         }
     }
 
-    private fun loadUserProfile() {
-        binding.firstnameUser.setText(sharedPreferences.getString("FirstName", ""))
-        binding.lastnameUser.setText(sharedPreferences.getString("LastName", ""))
-        binding.editTextText7.setText(sharedPreferences.getString("DateOfBirth", ""))
-        binding.editTextText8.setText(sharedPreferences.getString("Weight", ""))
-        binding.editTextText9.setText(sharedPreferences.getString("Height", ""))
+    private fun saveUserProfile(
+        firstName: String,
+        lastName: String,
+        dateOfBirth: String,
+        genderId: Int,
+        height: String,
+        weight: String
+    ) {
+        val editor = sharedPreferences.edit()
+        editor.putString("FirstName", firstName)
+        editor.putString("LastName", lastName)
+        editor.putString("DateOfBirth", dateOfBirth)
+        editor.putInt("GenderId", genderId)
+        editor.putString("Height", height)
+        editor.putString("Weight", weight)
+        val success = editor.commit()
+        Log.d("UserDrawerFragment", "Saved to SharedPreferences: " +
+                "FirstName=$firstName, LastName=$lastName, DateOfBirth=$dateOfBirth, " +
+                "GenderId=$genderId, Height=$height, Weight=$weight, CommitSuccess=$success")
+    }
 
+    private fun loadUserProfile() {
+        val firstName = sharedPreferences.getString("FirstName", "") ?: ""
+        val lastName = sharedPreferences.getString("LastName", "") ?: ""
+        val dateOfBirth = sharedPreferences.getString("DateOfBirth", "") ?: ""
+        val weight = sharedPreferences.getString("Weight", "") ?: ""
+        val height = sharedPreferences.getString("Height", "") ?: ""
         val genderId = sharedPreferences.getInt("GenderId", -1)
+
+        binding.firstnameUser.setText(firstName)
+        binding.lastnameUser.setText(lastName)
+        binding.editTextText7.setText(dateOfBirth)
+        binding.editTextText8.setText(weight)
+        binding.editTextText9.setText(height)
         if (genderId != -1) {
             binding.Radiogender.check(genderId)
         }
+
+        Log.d("UserDrawerFragment", "Loaded from SharedPreferences: " +
+                "FirstName=$firstName, LastName=$lastName, DateOfBirth=$dateOfBirth, " +
+                "Weight=$weight, Height=$height, GenderId=$genderId")
     }
 
     private fun updateUIWithProfileData(profileData: UserProfileLogData?) {

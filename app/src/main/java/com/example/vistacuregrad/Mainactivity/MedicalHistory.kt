@@ -1,6 +1,8 @@
 package com.example.vistacuregrad.Mainactivity
 
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +24,7 @@ import java.util.*
 class MedicalHistory : Fragment() {
 
     private lateinit var viewModel: MedicalHistoryViewModel
+    private lateinit var sharedPreferences: SharedPreferences
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -39,10 +42,19 @@ class MedicalHistory : Fragment() {
         val etFamilyHistory: EditText = view.findViewById(R.id.etfamilyhistory)
         val etCheckupDate: EditText = view.findViewById(R.id.etcheckupdate)
 
+        // Initialize SharedPreferences
+        sharedPreferences = requireContext().getSharedPreferences("MedicalHistoryPrefs", Context.MODE_PRIVATE)
+
+        // Load saved medical history data
+        loadMedicalHistory(
+            etAllergies, etChronicConditions, etMedications,
+            etSurgeries, etFamilyHistory, etCheckupDate
+        )
+
         // Initialize ViewModel
-        val apiService = RetrofitClient.apiService  // Get ApiService instance
-        val repository = AuthRepository(apiService) // Pass ApiService to Repository
-        val factory = MedicalHistoryViewModelFactory(repository, requireContext()) // Pass repository and context
+        val apiService = RetrofitClient.apiService
+        val repository = AuthRepository(apiService)
+        val factory = MedicalHistoryViewModelFactory(repository, requireContext())
         viewModel = ViewModelProvider(this, factory)[MedicalHistoryViewModel::class.java]
 
         btnDone.setOnClickListener {
@@ -60,14 +72,13 @@ class MedicalHistory : Fragment() {
                 return@setOnClickListener
             }
 
-            // Validate Date of Birth format
+            // Validate Date format
             if (!isValidDate(checkupDate)) {
                 etCheckupDate.error = "Enter a valid date (dd/MM/yyyy)"
                 etCheckupDate.requestFocus()
                 return@setOnClickListener
             }
 
-            // Create medical history request object
             val request = MedicalHistoryRequest(
                 allergies = allergies,
                 chronicConditions = chronicConditions,
@@ -77,7 +88,6 @@ class MedicalHistory : Fragment() {
                 lastCheckupDate = checkupDate
             )
 
-            // Call ViewModel function to create medical history
             viewModel.createMedicalHistory(request)
         }
 
@@ -86,16 +96,25 @@ class MedicalHistory : Fragment() {
             if (response.isSuccessful) {
                 Toast.makeText(requireContext(), "Medical history created successfully!", Toast.LENGTH_SHORT).show()
 
-                // Intent to navigate to NewActivity
+                // Save data to SharedPreferences
+                saveMedicalHistory(
+                    etAllergies.text.toString(),
+                    etChronicConditions.text.toString(),
+                    etMedications.text.toString(),
+                    etSurgeries.text.toString(),
+                    etFamilyHistory.text.toString(),
+                    etCheckupDate.text.toString()
+                )
+
+                // Navigate to NewActivity
                 val intent = Intent(requireActivity(), NewActivity::class.java)
                 startActivity(intent)
-                requireActivity().finish()  // Close the current fragment and activity
+                requireActivity().finish()
             } else {
                 Toast.makeText(requireContext(), "Failed: ${response.errorBody()?.string()}", Toast.LENGTH_SHORT).show()
             }
         })
 
-        // Back button click listener
         btnBack.setOnClickListener {
             requireActivity().onBackPressed()
         }
@@ -103,7 +122,40 @@ class MedicalHistory : Fragment() {
         return view
     }
 
-    // Function to validate the date format
+    private fun saveMedicalHistory(
+        allergies: String,
+        chronicConditions: String,
+        medications: String,
+        surgeries: String,
+        familyHistory: String,
+        lastCheckupDate: String
+    ) {
+        val editor = sharedPreferences.edit()
+        editor.putString("Allergies", allergies)
+        editor.putString("ChronicConditions", chronicConditions)
+        editor.putString("Medications", medications)
+        editor.putString("Surgeries", surgeries)
+        editor.putString("FamilyHistory", familyHistory)
+        editor.putString("LastCheckupDate", lastCheckupDate)
+        editor.apply()
+    }
+
+    private fun loadMedicalHistory(
+        etAllergies: EditText,
+        etChronicConditions: EditText,
+        etMedications: EditText,
+        etSurgeries: EditText,
+        etFamilyHistory: EditText,
+        etCheckupDate: EditText
+    ) {
+        etAllergies.setText(sharedPreferences.getString("Allergies", ""))
+        etChronicConditions.setText(sharedPreferences.getString("ChronicConditions", ""))
+        etMedications.setText(sharedPreferences.getString("Medications", ""))
+        etSurgeries.setText(sharedPreferences.getString("Surgeries", ""))
+        etFamilyHistory.setText(sharedPreferences.getString("FamilyHistory", ""))
+        etCheckupDate.setText(sharedPreferences.getString("LastCheckupDate", ""))
+    }
+
     private fun isValidDate(date: String): Boolean {
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
         dateFormat.isLenient = false
