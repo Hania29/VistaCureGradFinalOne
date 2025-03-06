@@ -13,5 +13,5 @@ data class LoginResponse(
     @SerializedName("message")
     val message: String,
     @SerializedName("tempToken")
-    val tempToken: String? // Assuming the API returns a token upon successful login
+    val tempToken: String?
 )

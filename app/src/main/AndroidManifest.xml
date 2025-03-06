@@ -20,18 +20,20 @@
         <activity
             android:name="com.example.vistacuregrad.Newactivity.NewActivity"
             android:exported="true">
+
+
+        </activity>
+
+        <activity
+            android:name=".Mainactivity.MainActivity"
+            android:exported="true"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.DEFAULT" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-        </activity>
-
-        <activity
-            android:name=".Mainactivity.MainActivity"
-            android:exported="true">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -49,21 +51,10 @@
 
                 <data
                     android:scheme="https"
-                    android:host="1ca6-196-152-222-247.ngrok-free.app"
-                    android:pathPrefix="/resetpassword" />
+                    android:host="9bfd-156-207-248-133.ngrok-free.app"
+                    android:pathPrefix="/api/Authentication/ResetPassword" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
 
-
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-
-                <data
-                    android:scheme="http"
-                    android:host="c421-197-54-188-79.ngrok-free.app"
-                    android:pathPrefix="/resetpassword" />
-            </intent-filter>
             <nav-graph android:value="@navigation/my_nav"/>
         </activity>
     </application>

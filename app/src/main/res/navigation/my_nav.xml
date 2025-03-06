@@ -113,7 +113,7 @@
 
         <deepLink
             android:id="@+id/deepLink_resetPass"
-            app:uri="https://1ca6-196-152-222-247.ngrok-free.app/api/Authentication/ResetPassword?token={token}"
+            app:uri="https://9bfd-156-207-248-133.ngrok-free.app/api/Authentication/ResetPassword?token={token}"
             app:action="android.intent.action.F"/>
         <action
             android:id="@+id/action_resetPass_to_seventhFragment"
