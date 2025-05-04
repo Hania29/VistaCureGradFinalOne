@@ -132,21 +132,44 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
     private fun uploadImage(file: File) {
+        // Get the token from SharedPreferences
+        val sharedPreferences = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        val token = sharedPreferences.getString("ORIGINAL_TOKEN", null)
+
+        if (token == null) {
+            Toast.makeText(requireContext(), "You need to login first", Toast.LENGTH_SHORT).show()
+            binding.detectionResult.text = "Authentication required. Please login first."
+            return
+        }
+
+        // Create MultipartBody.Part
         val imagePart = MultipartBody.Part.createFormData(
             "file", file.name, file.asRequestBody("image/*".toMediaTypeOrNull())
         )
 
-        homeViewModel.uploadImage(imagePart)
+        // Show loading state
+        binding.detectionResult.text = "Processing image..."
+
+        // Upload with token
+        homeViewModel.uploadImage(token, imagePart)
+
+        // Observe the response
         homeViewModel.uploadResponse.observe(viewLifecycleOwner) { response ->
             val message = if (response != null && response.isSuccessful) {
                 val results = response.body()?.results
                 if (!results.isNullOrEmpty()) {
-                    "Disease: ${results[0].diseaseName}\nProbability: ${results[0].probability}"
+                    val result = results[0]
+                    val formattedProbability = (result.probability * 100).toInt()
+                    "Disease: ${result.diseaseName}\nProbability: $formattedProbability%"
                 } else "No diseases detected"
             } else {
                 val errorBody = response?.errorBody()?.string()
                 Log.e("UploadImage", "Error: $errorBody")
-                "Image upload failed: ${errorBody ?: "Unknown error"}"
+                if (response?.code() == 401) {
+                    "Authentication failed. Please login again."
+                } else {
+                    "Image upload failed: ${errorBody ?: "Unknown error"}"
+                }
             }
 
             binding.detectionResult.text = message

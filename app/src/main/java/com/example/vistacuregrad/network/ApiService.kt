@@ -1,6 +1,7 @@
 package com.example.vistacuregrad.network
 
 import com.example.vistacuregrad.model.ForgotPasswordResponse
+import com.example.vistacuregrad.model.HistoryResponse
 import com.example.vistacuregrad.model.LoginResponse
 import com.example.vistacuregrad.model.MedicalHistoryLogResponse
 import com.example.vistacuregrad.model.MedicalHistoryResponse
@@ -90,6 +91,7 @@ interface ApiService {
     @Multipart
     @POST("/api/Detection/UploadImages")
     suspend fun uploadImage(
+        @Header("Authorization") token: String,
         @Part Image: MultipartBody.Part
     ): Response<UploadResponse>
 
@@ -131,6 +133,13 @@ interface ApiService {
         @Part("familyHistory") familyHistory: RequestBody,
         @Part("lastCheckupDate") lastCheckupDate: RequestBody
     ): Response<MedicalHistoryResponse>
+
+
+        @GET("api/Detection/GetUserImagesWithInfo")
+        suspend fun getUserImagesWithInfo(
+            @Header("Authorization") token: String,
+        ): Response<HistoryResponse>
+
 }
 
 

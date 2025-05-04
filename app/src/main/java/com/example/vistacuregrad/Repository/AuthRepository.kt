@@ -98,9 +98,9 @@ class AuthRepository(private val apiService: ApiService) {
     }
 
 
-        suspend fun uploadImage (file: MultipartBody.Part): Response<UploadResponse> {
-            return apiService.uploadImage(file)
-        }
+    suspend fun uploadImage(token: String, file: MultipartBody.Part): Response<UploadResponse> {
+        return apiService.uploadImage("Bearer $token", file)
+    }
 
     suspend fun getUserProfileLog(token: String): Response<UserProfileLogResponse> {
         Log.d("AuthRepository", "Token sent in API request: Bearer $token")
@@ -154,5 +154,10 @@ class AuthRepository(private val apiService: ApiService) {
             familyHistory = familyHistoryBody,
             lastCheckupDate = lastCheckupDateBody
         )
+    }
+    suspend fun getHistory(token: String): HistoryResponse? {
+        val response = apiService.getUserImagesWithInfo("Bearer $token")
+        Log.d("AuthRepository", "API response: ${response.body()}")
+        return if (response.isSuccessful) response.body() else null
     }
 }

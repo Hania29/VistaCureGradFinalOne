@@ -16,10 +16,12 @@ class HomeViewModel(private val repository: AuthRepository) : ViewModel() {
     private val _uploadResponse = MutableLiveData<Response<UploadResponse>?>()
     val uploadResponse: LiveData<Response<UploadResponse>?> get() = _uploadResponse
 
-    fun uploadImage(file: MultipartBody.Part) {
+    fun uploadImage(token: String, file: MultipartBody.Part) {
+
+
         viewModelScope.launch {
             try {
-                val response = repository.uploadImage(file)
+                val response = repository.uploadImage(token, file)
                 _uploadResponse.value = response
             } catch (e: Exception) {
                 Log.e("UploadImage", "Error uploading image: ${e.message}", e)
