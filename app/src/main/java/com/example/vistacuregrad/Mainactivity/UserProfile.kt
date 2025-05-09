@@ -226,49 +226,7 @@ class UserProfile : Fragment() {
                 "Height=$height, " +
                 "Weight=$weight")
 
-        // Set values and force UI update
-        etFirstName.setText(firstName)
-        etLastName.setText(lastName)
-        etDateOfBirth.setText(dateOfBirth)
-        etHeight.setText(height)
-        etWeight.setText(weight)
-        if (genderId != -1) {
-            rgGender.check(genderId)
-        }
 
-        // Force redraw
-        etFirstName.post {
-            etFirstName.setText(firstName)
-            etFirstName.invalidate()
-        }
-        etLastName.post {
-            etLastName.setText(lastName)
-            etLastName.invalidate()
-        }
-        etDateOfBirth.post {
-            etDateOfBirth.setText(dateOfBirth)
-            etDateOfBirth.invalidate()
-        }
-        etHeight.post {
-            etHeight.setText(height)
-            etHeight.invalidate()
-        }
-        etWeight.post {
-            etWeight.setText(weight)
-            etWeight.invalidate()
-        }
-        rgGender.post {
-            if (genderId != -1) rgGender.check(genderId)
-            rgGender.invalidate()
-        }
-
-        Log.d("UserProfile", "After loading to UI: " +
-                "etFirstName=${etFirstName.text}, " +
-                "etLastName=${etLastName.text}, " +
-                "etDateOfBirth=${etDateOfBirth.text}, " +
-                "rgGender.checked=${rgGender.checkedRadioButtonId}, " +
-                "etHeight=${etHeight.text}, " +
-                "etWeight=${etWeight.text}")
     }
 
     private fun verifySharedPreferences() {

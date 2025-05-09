@@ -76,11 +76,17 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
-                android:fontFamily="@font/rasa"
-                android:hint="Ask anything "
+                android:hint="Ask anything"
                 android:padding="8dp"
                 android:textColor="@color/blackQ"
-                android:textSize="25dp" />
+                android:textSize="25sp"
+                android:inputType="textMultiLine|textCapSentences"
+                android:gravity="start|top"
+                android:textAlignment="viewStart"
+                android:textDirection="locale"
+                android:layoutDirection="locale"
+                />
+
 
             <ImageView
                 android:id="@+id/btn_eye"
