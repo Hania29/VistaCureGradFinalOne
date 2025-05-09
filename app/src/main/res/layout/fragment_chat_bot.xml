@@ -9,10 +9,12 @@
     tools:context=".ChatBotFragment">
 
     <!-- Main Layout -->
+
+    <!-- Bottom Navigation Bar -->
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:background="@color/BackGround"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:background="@color/BackGround"
         android:paddingBottom="70dp"> <!-- Adjust padding to prevent overlap with Bottom Navigation -->
 
         <!-- Back Button -->
@@ -20,27 +22,38 @@
             android:id="@+id/btn_back"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:layout_marginStart="5dp"
+            android:layout_marginTop="16dp"
             android:contentDescription="Back"
             android:src="@drawable/ic_back"
-            app:tint="@color/btnback"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:layout_marginStart="5dp"
-            android:layout_marginTop="16dp" />
+            app:tint="@color/btnback" />
 
         <!-- ChatBot Text -->
+
         <TextView
             android:id="@+id/tv_chat_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Hello, How can I help you?"
+            android:hint="Hello, How can I help you?"
             android:textColor="@color/DarkBlueMainTitle"
             android:textSize="24sp"
             app:layout_constraintBottom_toTopOf="@+id/linearLayout"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btn_back"
-            android:layout_marginTop="50dp" />
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.043" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rv_chat"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:padding="8dp"
+            app:layout_constraintBottom_toTopOf="@id/linearLayout"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tv_chat_message" />
 
         <!-- Chat Input Section -->
         <LinearLayout
@@ -51,8 +64,8 @@
             android:background="@drawable/round_et"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent">
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
 
             <!-- Message Input -->
 
@@ -63,8 +76,8 @@
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@null"
-                android:hint="Ask anything "
                 android:fontFamily="@font/rasa"
+                android:hint="Ask anything "
                 android:padding="8dp"
                 android:textColor="@color/blackQ"
                 android:textSize="25dp" />
@@ -78,9 +91,9 @@
                 android:src="@drawable/neweyelogo" />
         </LinearLayout>
 
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <!-- Bottom Navigation Bar -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
         style="@style/CustomBottomNav"
