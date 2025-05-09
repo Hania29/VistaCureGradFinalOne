@@ -1,5 +1,8 @@
 package com.example.vistacuregrad.network
 
+import com.example.vistacuregrad.model.ChatHistoryResponse
+import com.example.vistacuregrad.model.ChatRequest
+import com.example.vistacuregrad.model.ChatResponse
 import com.example.vistacuregrad.model.ForgotPasswordResponse
 import com.example.vistacuregrad.model.HistoryResponse
 import com.example.vistacuregrad.model.LoginResponse
@@ -14,6 +17,7 @@ import com.example.vistacuregrad.model.UserProfileResponse
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
+import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -139,6 +143,17 @@ interface ApiService {
         suspend fun getUserImagesWithInfo(
             @Header("Authorization") token: String,
         ): Response<HistoryResponse>
+
+    @POST("api/Chatbot/ask")
+    suspend fun askChatbot(
+        @Header("Authorization") token: String,
+        @Body request: ChatRequest): ChatResponse
+
+    @GET("api/Chatbot/history")
+    suspend fun getChatHistory(
+        @Header("Authorization") token: String
+    ): ChatHistoryResponse
+
 
 }
 

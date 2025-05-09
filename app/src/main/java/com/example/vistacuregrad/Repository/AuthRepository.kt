@@ -160,4 +160,11 @@ class AuthRepository(private val apiService: ApiService) {
         Log.d("AuthRepository", "API response: ${response.body()}")
         return if (response.isSuccessful) response.body() else null
     }
+
+    suspend fun askChatbot(token: String, message: String): ChatResponse {
+        return apiService.askChatbot("Bearer $token", ChatRequest(message))
+    }
+    suspend fun getChatHistory(token: String): ChatHistoryResponse {
+        return apiService.getChatHistory("Bearer $token")
+    }
 }
