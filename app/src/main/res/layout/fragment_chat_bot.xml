@@ -9,13 +9,14 @@
     tools:context=".ChatBotFragment">
 
     <!-- Main Layout -->
-
-    <!-- Bottom Navigation Bar -->
     <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/constraintLayout"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/BackGround"
-        android:paddingBottom="70dp"> <!-- Adjust padding to prevent overlap with Bottom Navigation -->
+        android:paddingBottom="70dp"
+        app:layout_anchor="@+id/constraintLayout"
+        app:layout_anchorGravity="center">
 
         <!-- Back Button -->
         <ImageView
@@ -30,37 +31,72 @@
             app:layout_constraintTop_toTopOf="parent"
             app:tint="@color/btnback" />
 
-        <!-- ChatBot Text -->
+        <!-- Eye Icon at Top Center (Initially Hidden) -->
+        <ImageView
+            android:id="@+id/eye_top"
+            android:layout_width="75dp"
+            android:layout_height="80dp"
+            android:contentDescription="Eye Icon Top"
+            android:padding="10dp"
+            android:src="@drawable/neweyelogo"
+            android:visibility="gone"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="16dp" />
 
-        <TextView
-            android:id="@+id/tv_chat_message"
+        <!-- Container for Welcome Text and Center Eye (Centered) -->
+        <LinearLayout
+            android:id="@+id/welcome_container"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Hello, How can I help you?"
-            android:textColor="@color/DarkBlueMainTitle"
-            android:textSize="24sp"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="visible"
             app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.043" />
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
 
+            <!-- Eye Icon at Center -->
+            <ImageView
+                android:id="@+id/eye_center"
+                android:layout_width="105dp"
+                android:layout_height="110dp"
+                android:contentDescription="Eye Icon Center"
+                android:padding="10dp"
+                android:src="@drawable/neweyelogo" />
+
+            <!-- ChatBot Text -->
+            <TextView
+                android:id="@+id/tv_chat_message"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:hint="Hello, How can I help you?"
+                android:textColor="@color/DarkBlueMainTitle"
+                android:textSize="24sp" />
+        </LinearLayout>
+
+        <!-- RecyclerView for Chat -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_chat"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:padding="8dp"
+            android:visibility="gone"
+            app:layout_constraintTop_toBottomOf="@id/eye_top"
             app:layout_constraintBottom_toTopOf="@id/linearLayout"
-            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/tv_chat_message" />
+            app:layout_constraintEnd_toEndOf="parent" />
 
         <!-- Chat Input Section -->
         <LinearLayout
             android:id="@+id/linearLayout"
-            android:layout_width="match_parent"
-            android:layout_height="65dp"
+            android:layout_width="0dp"
+            android:layout_height="53dp"
             android:layout_margin="15dp"
+            android:layout_marginBottom="12dp"
             android:background="@drawable/round_et"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -68,38 +104,35 @@
             app:layout_constraintStart_toStartOf="parent">
 
             <!-- Message Input -->
-
-            <!-- Eye Icon -->
             <EditText
                 android:id="@+id/et_message"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
-                android:background="@null"
-                android:hint="Ask anything"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/chat_edittext"
+                android:fontFamily="@font/rasa"
+                android:hint="Ask Anything..."
+                android:inputType="textCapSentences|textMultiLine"
+                android:maxLines="3"
+                android:minHeight="48dp"
                 android:padding="8dp"
                 android:textColor="@color/blackQ"
-                android:textSize="25sp"
-                android:inputType="textMultiLine|textCapSentences"
-                android:gravity="start|top"
-                android:textAlignment="viewStart"
-                android:textDirection="locale"
-                android:layoutDirection="locale"
-                />
+                android:textSize="24sp" />
 
-
+            <!-- Send Button -->
             <ImageView
                 android:id="@+id/btn_eye"
-                android:layout_width="70dp"
-                android:layout_height="75dp"
-                android:contentDescription="Eye Icon"
-                android:padding="10dp"
-                android:src="@drawable/neweyelogo" />
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="Send"
+                android:padding="12dp"
+                android:src="@drawable/sendm" />
         </LinearLayout>
-
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
+    <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
         style="@style/CustomBottomNav"

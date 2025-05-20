@@ -34,6 +34,7 @@
             android:id="@+id/medicalhistory_drawer"
             android:layout_width="213dp"
             android:layout_height="48dp"
+            android:layout_marginTop="8dp"
             android:gravity="center"
             android:paddingStart="10dp"
             android:text=" History "
@@ -43,8 +44,7 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.352"
             app:layout_constraintStart_toEndOf="@+id/btn_back"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.031" />
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerView"
