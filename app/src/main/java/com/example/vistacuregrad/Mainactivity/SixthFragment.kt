@@ -1,8 +1,12 @@
+// File: app/src/main/java/com/example/vistacuregrad/Mainactivity/SixthFragment.kt
 package com.example.vistacuregrad.Mainactivity
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,7 +22,10 @@ import com.example.vistacuregrad.R
 import com.example.vistacuregrad.Repository.AuthRepository
 import com.example.vistacuregrad.Viewmodel.OtpViewModel
 import com.example.vistacuregrad.Viewmodel.OtpViewModelFactory
+import com.example.vistacuregrad.model.ProfileHistoryCheckResponse // Import
 import com.example.vistacuregrad.network.RetrofitClient
+import com.example.vistacuregrad.Newactivity.NewActivity
+
 
 class SixthFragment : Fragment() {
 
@@ -34,6 +41,7 @@ class SixthFragment : Fragment() {
     private val otpViewModel: OtpViewModel by viewModels {
         OtpViewModelFactory(requireActivity().application, AuthRepository(RetrofitClient.apiService))
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -71,6 +79,10 @@ class SixthFragment : Fragment() {
             }
         }
 
+        // *** Observe the profileHistoryCheckResult LiveData for navigation decision ***
+        observeProfileHistoryCheckResult()
+
+        // Optional: Observe otpResponse for initial OTP verification message
         observeOtpResponse()
 
         return view
@@ -87,20 +99,19 @@ class SixthFragment : Fragment() {
 
     private fun verifyOtp(otpCode: String) {
         progressBar.visibility = View.VISIBLE
+        // Calling verifyOtp in ViewModel triggers the profile check internally now
         otpViewModel.verifyOtp(otpCode)
     }
 
+    // Observer for initial OTP verification message
     private fun observeOtpResponse() {
         otpViewModel.otpResponse.observe(viewLifecycleOwner, Observer { response ->
-            progressBar.visibility = View.GONE
-            btnOTP.isEnabled = true // Re-enable button
-
+            // Progress bar and button re-enabling handled by profileHistoryCheckResult observer
             response?.let {
                 if (it.isSuccessful && it.body() != null) {
                     val otpResponse = it.body()
                     if (otpResponse?.status.equals("Success", ignoreCase = true)) {
-                        Toast.makeText(requireContext(), "OTP Verified Successfully!", Toast.LENGTH_SHORT).show()
-                        findNavController().navigate(R.id.action_sixthFragment_to_userProfile)
+                        Toast.makeText(requireContext(), "OTP Verified Successfully! Checking profile...", Toast.LENGTH_SHORT).show()
                     } else {
                         Toast.makeText(requireContext(), otpResponse?.message ?: "Invalid OTP", Toast.LENGTH_SHORT).show()
                     }
@@ -114,6 +125,34 @@ class SixthFragment : Fragment() {
             }
         })
     }
+
+
+    // *** Observer for handling the profile and medical history check result and navigation ***
+    private fun observeProfileHistoryCheckResult() {
+        otpViewModel.profileHistoryCheckResult.observe(viewLifecycleOwner, Observer { result ->
+            progressBar.visibility = View.GONE // Hide progress bar once check is complete
+            btnOTP.isEnabled = true // Re-enable button
+
+            result.onSuccess { data: ProfileHistoryCheckResponse ->
+                Log.d("SixthFragment", "Profile check result: UserProfileExists=${data.UserProfileExists}, MedicalHistoryExists=${data.MedicalHistoryExists}")
+                if (data.UserProfileExists && data.MedicalHistoryExists) {
+                    // User has profile and medical history, navigate to new activity and finish current activity
+                    Toast.makeText(requireContext(), "Profile and history found. Redirecting...", Toast.LENGTH_SHORT).show()
+                    navigateToNewActivity()
+                } else {
+                    // User needs to complete profile/medical history, navigate to that flow
+                    Toast.makeText(requireContext(), "Profile/history not found. Complete your profile.", Toast.LENGTH_SHORT).show()
+                    navigateToUserProfileAndMedicalHistory()
+                }
+            }.onFailure { exception ->
+                // Handle the error (e.g., show a Toast)
+                Log.e("SixthFragment", "Error during profile check: ${exception.message}")
+                Toast.makeText(context, "Error checking user profile: ${exception.message}", Toast.LENGTH_LONG).show()
+                // Keep user on OTP screen on error, or decide on a different error flow
+            }
+        })
+    }
+
 
     private fun createOtpTextWatcher(next: EditText?, previous: EditText? = null): TextWatcher {
         return object : TextWatcher {
@@ -137,5 +176,17 @@ class SixthFragment : Fragment() {
             return false
         }
         return true
+    }
+
+    // Function to navigate to the "new activity" and finish the current activity
+    private fun navigateToNewActivity() {
+        val intent = Intent(activity, com.example.vistacuregrad.Newactivity.NewActivity::class.java)
+        startActivity(intent)
+        activity?.finish() // Finish the current Activity (the one hosting this fragment)
+    }
+
+    // Function to navigate to the user profile / medical history flow using Navigation Component
+    private fun navigateToUserProfileAndMedicalHistory() {
+        findNavController().navigate(R.id.action_sixthFragment_to_userProfile) // *** Use your actual navigation action ID ***
     }
 }

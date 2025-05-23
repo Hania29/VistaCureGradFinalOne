@@ -9,6 +9,7 @@ import com.example.vistacuregrad.model.LoginResponse
 import com.example.vistacuregrad.model.MedicalHistoryLogResponse
 import com.example.vistacuregrad.model.MedicalHistoryResponse
 import com.example.vistacuregrad.model.OtpResponse
+import com.example.vistacuregrad.model.ProfileHistoryCheckResponse
 import com.example.vistacuregrad.model.RegisterResponse
 import com.example.vistacuregrad.model.ResetPasswordResponse
 import com.example.vistacuregrad.model.UploadResponse
@@ -51,6 +52,12 @@ interface ApiService {
         @Field("code") code: String,
         @Header("Authorization") token: String
     ): Response<OtpResponse>
+
+    @GET("api/Authentication/CheckUserProfileAndMedicalHistory")
+    suspend fun checkProfileAndMedicalHistory(
+        @Header("Authorization") token: String // Pass the original token with Bearer prefix
+    ): Response<ProfileHistoryCheckResponse>
+
 
     @Multipart
     @POST("api/Authentication/CreateUserProfile")

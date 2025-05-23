@@ -32,6 +32,8 @@ class UserProfile : Fragment() {
     ): View {
         val view = inflater.inflate(R.layout.fragment_user_profile, container, false)
 
+
+
         // Initialize UI elements
         val btnNext: Button = view.findViewById(R.id.btnNext)
         val btnBack: Button = view.findViewById(R.id.btnBack)
@@ -102,6 +104,8 @@ class UserProfile : Fragment() {
             saveUserProfile(firstName, lastName, dateOfBirth, selectedGenderId, heightStr, weightStr)
             verifySharedPreferences()
         }
+
+
 
         // Observe API response
         viewModel.profileResponse.observe(viewLifecycleOwner) { response ->
