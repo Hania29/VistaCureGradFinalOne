@@ -167,4 +167,5 @@ class AuthRepository(private val apiService: ApiService) {
     suspend fun getChatHistory(token: String): ChatHistoryResponse {
         return apiService.getChatHistory("Bearer $token")
     }
+
 }
