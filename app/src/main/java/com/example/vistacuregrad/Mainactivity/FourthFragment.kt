@@ -56,7 +56,7 @@ class FourthFragment : Fragment() {
             Log.i("FourthFragment email", etEmail.text.toString().trim())
             Log.i("FourthFragment password", etPassword.text.toString().trim())
             if (validateFields(etUserName, etEmail, etPassword)) {
-                registerViewModel.registerUser(username, password, email )
+               registerViewModel.registerUser(username,password,email)
             }
         }
 

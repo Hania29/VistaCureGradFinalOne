@@ -18,7 +18,7 @@ class RegisterViewModel(private val repository: AuthRepository) : ViewModel() {
         viewModelScope.launch {
             try {
                 val response = repository.registerUser(
-                    username = username,
+                        username = username,
                     password = password,
                     email = email
                 )

@@ -21,7 +21,7 @@ class AuthRepository(private val apiService: ApiService) {
         val passwordBody = password.toRequestBody("text/plain".toMediaTypeOrNull())
 
         return apiService.registerUser(
-            userName = userNameBody,
+                userName = userNameBody,
             password = passwordBody,
             email = emailBody
         )
