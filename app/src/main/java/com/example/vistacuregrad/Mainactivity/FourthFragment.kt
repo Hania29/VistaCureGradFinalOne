@@ -21,12 +21,12 @@ import com.example.vistacuregrad.network.RetrofitClient
 
 class FourthFragment : Fragment() {
 
-    // Initialize ViewModel using Factory
     private val registerViewModel: RegisterViewModel by viewModels {
         RegisterViewModelFactory(AuthRepository(RetrofitClient.apiService))
     }
 
     private var isPasswordVisible = false
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,8 +41,8 @@ class FourthFragment : Fragment() {
         val btnSignUp = view.findViewById<Button>(R.id.btnSignUpSecondActivity)
         val btnLogIn = view.findViewById<Button>(R.id.btnLogInSecondActivity)
         val btnBack = view.findViewById<Button>(R.id.btnBack)
+        progressBar = view.findViewById(R.id.progressBar)
 
-        // Toggle password visibility
         ivTogglePassword.setOnClickListener {
             isPasswordVisible =
                 togglePasswordVisibility(etPassword, ivTogglePassword, isPasswordVisible)
@@ -52,19 +52,17 @@ class FourthFragment : Fragment() {
             val username = etUserName.text.toString().trim()
             val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
-            Log.i("FourthFragment username", etUserName.text.toString().trim())
-            Log.i("FourthFragment email", etEmail.text.toString().trim())
-            Log.i("FourthFragment password", etPassword.text.toString().trim())
+
             if (validateFields(etUserName, etEmail, etPassword)) {
-               registerViewModel.registerUser(username,password,email)
+                progressBar.visibility = View.VISIBLE
+                registerViewModel.registerUser(username, password, email)
             }
         }
 
-        // Observe registration response
         registerViewModel.registerResponse.observe(viewLifecycleOwner, Observer { response ->
+            progressBar.visibility = View.GONE
             if (response.isSuccessful) {
-                Toast.makeText(requireContext(), "Registration Successful", Toast.LENGTH_SHORT)
-                    .show()
+                Toast.makeText(requireContext(), "Registration Successful", Toast.LENGTH_SHORT).show()
                 findNavController().navigate(R.id.action_fourthFragment_to_seventhFragment)
             } else {
                 val errorMessage = response.errorBody()?.string() ?: "Registration Failed"
@@ -92,8 +90,7 @@ class FourthFragment : Fragment() {
             editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD
             imageView.setImageResource(R.drawable.hidden11)
         } else {
-            editText.inputType =
-                InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
+            editText.inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD
             imageView.setImageResource(R.drawable.visabile)
         }
         editText.setSelection(editText.text.length)
@@ -124,8 +121,7 @@ class FourthFragment : Fragment() {
         if (password.length < 6 || !password.matches(".*[A-Z].*".toRegex()) ||
             !password.matches(".*\\d.*".toRegex()) || !password.matches(".*[@#\$%&!].*".toRegex())
         ) {
-            etPassword.error =
-                "Password must contain 6+ chars, 1 uppercase, 1 number & 1 special char"
+            etPassword.error = "Password must contain 6+ chars, 1 uppercase, 1 number & 1 special char"
             etPassword.requestFocus()
             return false
         }

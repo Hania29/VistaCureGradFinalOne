@@ -6,9 +6,7 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.EditText
-import android.widget.Toast
+import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
@@ -24,9 +22,9 @@ import kotlinx.coroutines.launch
 class FifthFragment : Fragment() {
 
     private lateinit var emailField: EditText
+    private lateinit var progressBar: ProgressBar
     private var savedEmail: String? = null
 
-    // ViewModel initialization
     private val authViewModel: AuthViewModel by viewModels {
         AuthViewModelFactory(AuthRepository(RetrofitClient.apiService))
     }
@@ -38,6 +36,7 @@ class FifthFragment : Fragment() {
         val view = inflater.inflate(R.layout.fragment_fifth, container, false)
 
         emailField = view.findViewById(R.id.etEmailAddressThirdActivity)
+        progressBar = view.findViewById(R.id.progressBarForgot)
 
         savedInstanceState?.getString("email")?.let {
             emailField.setText(it)
@@ -68,6 +67,8 @@ class FifthFragment : Fragment() {
             return
         }
 
+        progressBar.visibility = View.VISIBLE
+
         lifecycleScope.launch {
             authViewModel.forgotPassword(emailText)
         }
@@ -75,6 +76,7 @@ class FifthFragment : Fragment() {
 
     private fun observeForgotPasswordResponse() {
         authViewModel.forgotPasswordResponse.observe(viewLifecycleOwner, Observer { response ->
+            progressBar.visibility = View.GONE
             if (response.isSuccessful && response.body() != null) {
                 Toast.makeText(requireContext(), response.body()?.message, Toast.LENGTH_LONG).show()
                 findNavController().navigate(R.id.action_fifthFragment_to_resetPass)

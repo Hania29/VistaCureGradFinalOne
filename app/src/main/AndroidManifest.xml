@@ -44,14 +44,12 @@
 
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
-
-
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
                     android:scheme="https"
-                    android:host="9bfd-156-207-248-133.ngrok-free.app"
+                    android:host="8721cb405e66.ngrok-free.app/"
                     android:pathPrefix="/api/Authentication/ResetPassword" />
             </intent-filter>
 

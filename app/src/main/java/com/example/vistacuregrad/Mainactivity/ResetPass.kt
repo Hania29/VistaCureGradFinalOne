@@ -20,6 +20,7 @@ import com.example.vistacuregrad.viewmodel.ResetPasswordViewModel
 import com.example.vistacuregrad.viewmodel.ResetPasswordViewModelFactory
 import kotlinx.coroutines.launch
 import org.json.JSONObject
+import java.net.URLDecoder
 
 class ResetPass : Fragment() {
 
@@ -35,6 +36,7 @@ class ResetPass : Fragment() {
     private var email: String? = null
     private var isPasswordVisible = false
     private var isConfirmPasswordVisible = false
+    private var isResetting = false
 
     private val resetPasswordViewModel: ResetPasswordViewModel by viewModels {
         ResetPasswordViewModelFactory(AuthRepository(RetrofitClient.apiService))
@@ -45,18 +47,47 @@ class ResetPass : Fragment() {
 
         val deepLink: Uri? = requireActivity().intent?.data
         if (deepLink != null) {
-            token = deepLink.getQueryParameter("token")
-            email = deepLink.getQueryParameter("email")
-            Toast.makeText(requireContext(), token, Toast.LENGTH_SHORT).show()
+            // Get and decode the token from the URL
+            token = deepLink.getQueryParameter("token")?.let {
+                try {
+                    // Decode the URL-encoded token
+                    val decoded = URLDecoder.decode(it, "UTF-8")
+                    Log.d("ResetPassFragment", "Decoded Token: $decoded")
+                    decoded
+                } catch (e: Exception) {
+                    Log.e("ResetPassFragment", "Error decoding token", e)
+                    showToast("Invalid reset link format")
+                    null
+                }
+            }
+            email = deepLink.getQueryParameter("email")?.let {
+                try {
+                    URLDecoder.decode(it, "UTF-8")
+                } catch (e: Exception) {
+                    it // Return original if decoding fails
+                }
+            }
         } else {
             arguments?.let { bundle ->
-                token = bundle.getString("token")?.replace("+", "%2B")
+                token = bundle.getString("token")?.let {
+                    try {
+                        URLDecoder.decode(it, "UTF-8")
+                    } catch (e: Exception) {
+                        Log.e("ResetPassFragment", "Error decoding token from arguments", e)
+                        null
+                    }
+                }
                 email = bundle.getString("email")
             }
         }
 
-        Log.d("ResetPassFragment", "Extracted Token: $token")
-        Log.d("ResetPassFragment", "Extracted Email: $email")
+        // Validate token format
+        if (token.isNullOrEmpty() || token!!.length < 20) {
+            Log.e("ResetPassFragment", "Invalid token format. Length: ${token?.length ?: 0}")
+            showToast("Invalid reset link. Please request a new one.")
+        } else {
+            Log.d("ResetPassFragment", "Valid token received. First 10 chars: ${token!!.take(10)}...")
+        }
     }
 
     override fun onCreateView(
@@ -82,16 +113,25 @@ class ResetPass : Fragment() {
         }
 
         btnDone.setOnClickListener {
+            if (isResetting) return@setOnClickListener
+
             val password = etPass.text.toString().trim()
             val confirmPassword = etConfirmPass.text.toString().trim()
-            val emailInput = etEmailAddress.text.toString().trim()
+            val emailInput = etEmailAddress.text.toString().trim().lowercase()
 
             if (validateFields(password, confirmPassword, emailInput)) {
                 if (token.isNullOrEmpty()) {
                     showToast("Invalid or missing token")
                 } else {
+                    isResetting = true
+                    btnDone.isEnabled = false
+                    btnDone.alpha = 0.5f
+
                     lifecycleScope.launch {
-                        Log.d("ResetPassFragment", "Sending Request - Token: $token, Email: $emailInput")
+                        Log.d("ResetPassFragment", "Attempting password reset for: $emailInput")
+                        Log.d("ResetPassFragment", "Token being sent (first/last 10 chars): " +
+                                "${token!!.take(10)}...${token!!.takeLast(10)}")
+
                         resetPasswordViewModel.resetPassword(password, confirmPassword, token!!, emailInput)
                     }
                 }
@@ -100,6 +140,10 @@ class ResetPass : Fragment() {
 
         resetPasswordViewModel.resetPasswordResponse.observe(viewLifecycleOwner) { response ->
             lifecycleScope.launch {
+                isResetting = false
+                btnDone.isEnabled = true
+                btnDone.alpha = 1.0f
+
                 if (response.isSuccessful && response.body() != null) {
                     showToast(response.body()?.message ?: "Password reset successfully!")
                     Log.d("ResetPassFragment", "Password Reset Successful")
@@ -113,7 +157,9 @@ class ResetPass : Fragment() {
         }
 
         btnBack.setOnClickListener {
-            findNavController().navigateUp()
+            if (!isResetting) {
+                findNavController().navigateUp()
+            }
         }
 
         return view
@@ -153,13 +199,35 @@ class ResetPass : Fragment() {
 
     private fun parseError(response: retrofit2.Response<*>): String {
         return try {
-            JSONObject(response.errorBody()?.string() ?: "{}").optString("message", "Unknown error occurred")
+            val errorBody = response.errorBody()?.string() ?: "{}"
+            Log.e("ResetPassFragment", "Full Error Response: $errorBody")
+
+            JSONObject(errorBody).optString("message", "Unknown error occurred").let { message ->
+                when {
+                    message.contains("token", ignoreCase = true) -> {
+                        "Invalid or expired token. Please request a new password reset link."
+                    }
+                    message.contains("expired", ignoreCase = true) -> {
+                        "This password reset link has expired. Please request a new one."
+                    }
+                    message.contains("invalid", ignoreCase = true) -> {
+                        "Invalid request. Please try again or request a new link."
+                    }
+                    else -> message.ifEmpty { "An unknown error occurred. Please try again." }
+                }
+            }
         } catch (e: Exception) {
+            Log.e("ResetPassFragment", "Error parsing error response", e)
             "Error: ${response.message()}"
         }
     }
 
     private fun showToast(message: String) {
         Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        resetPasswordViewModel.resetPasswordResponse.removeObservers(viewLifecycleOwner)
     }
 }

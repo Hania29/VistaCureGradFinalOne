@@ -90,11 +90,11 @@ class AuthRepository(private val apiService: ApiService) {
     suspend fun resetPassword(
         password: String,
         confirmPassword: String,
-        token: String,
+        token: String,  // Already URL encoded
         email: String
     ): Response<ResetPasswordResponse> {
-        val processedToken = token.replace("+", "%2B")
-        return apiService.resetPassword(password, confirmPassword, processedToken, email)
+        // Don't modify the token here - send it exactly as received
+        return apiService.resetPassword(password, confirmPassword, token, email)
     }
 
 

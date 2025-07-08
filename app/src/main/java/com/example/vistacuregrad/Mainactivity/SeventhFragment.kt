@@ -24,10 +24,11 @@ class SeventhFragment : Fragment() {
 
     private lateinit var sharedPreferences: SharedPreferences
     private var isPasswordVisible = false
+    private lateinit var progressBar: ProgressBar
+
     private val loginViewModel: LoginViewModel by viewModels {
         LoginViewModelFactory(AuthRepository(RetrofitClient.apiService), requireContext())
     }
-
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -44,6 +45,7 @@ class SeventhFragment : Fragment() {
         val btnForgotPassword: Button = view.findViewById(R.id.btnForgotPassword)
         val btnBack: Button = view.findViewById(R.id.btnBack)
         val btnLogIn: Button = view.findViewById(R.id.btnLogIn)
+        progressBar = view.findViewById(R.id.progressBar)
 
         ivTogglePassword.setOnClickListener {
             isPasswordVisible = togglePasswordVisibility(etPassword, ivTogglePassword, isPasswordVisible)
@@ -66,15 +68,16 @@ class SeventhFragment : Fragment() {
             val enteredPassword = etPassword.text.toString().trim()
 
             if (validateFields(etUserName0, etPassword)) {
+                progressBar.visibility = View.VISIBLE
                 loginViewModel.loginUser(enteredUsername, enteredPassword)
             }
         }
 
         loginViewModel.loginResponse.observe(viewLifecycleOwner, Observer { response ->
+            progressBar.visibility = View.GONE
             if (response.isSuccessful) {
                 response.body()?.let { body ->
                     if (body.status == "Success" && !body.tempToken.isNullOrEmpty()) {
-                        // ✅ Save token in SharedPreferences for OTP verification
                         sharedPreferences.edit()
                             .putString("TOKEN", body.tempToken)
                             .apply()

@@ -25,6 +25,7 @@ class MedicalHistory : Fragment() {
 
     private lateinit var viewModel: MedicalHistoryViewModel
     private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,6 +42,8 @@ class MedicalHistory : Fragment() {
         val etSurgeries: EditText = view.findViewById(R.id.etsurgeries)
         val etFamilyHistory: EditText = view.findViewById(R.id.etfamilyhistory)
         val etCheckupDate: EditText = view.findViewById(R.id.etcheckupdate)
+        progressBar = view.findViewById(R.id.progressBar)
+        progressBar.visibility = View.GONE
 
         // Initialize SharedPreferences
         sharedPreferences = requireContext().getSharedPreferences("MedicalHistoryPrefs", Context.MODE_PRIVATE)
@@ -65,14 +68,12 @@ class MedicalHistory : Fragment() {
             val familyHistory = etFamilyHistory.text.toString().trim()
             val checkupDate = etCheckupDate.text.toString().trim()
 
-            // Validate user inputs
             if (allergies.isEmpty() || chronicConditions.isEmpty() || medications.isEmpty() ||
                 surgeries.isEmpty() || familyHistory.isEmpty() || checkupDate.isEmpty()) {
                 Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
-            // Validate Date format
             if (!isValidDate(checkupDate)) {
                 etCheckupDate.error = "Enter a valid date (dd/MM/yyyy)"
                 etCheckupDate.requestFocus()
@@ -88,15 +89,17 @@ class MedicalHistory : Fragment() {
                 lastCheckupDate = checkupDate
             )
 
+            progressBar.visibility = View.VISIBLE
+            btnDone.isEnabled = false
             viewModel.createMedicalHistory(request)
         }
 
-        // Observe API response
         viewModel.medicalHistoryResponse.observe(viewLifecycleOwner, Observer { response ->
+            progressBar.visibility = View.GONE
+            btnDone.isEnabled = true
             if (response.isSuccessful) {
                 Toast.makeText(requireContext(), "Medical history created successfully!", Toast.LENGTH_SHORT).show()
 
-                // Save data to SharedPreferences
                 saveMedicalHistory(
                     etAllergies.text.toString(),
                     etChronicConditions.text.toString(),
@@ -106,7 +109,6 @@ class MedicalHistory : Fragment() {
                     etCheckupDate.text.toString()
                 )
 
-                // Navigate to NewActivity
                 val intent = Intent(requireActivity(), NewActivity::class.java)
                 startActivity(intent)
                 requireActivity().finish()
