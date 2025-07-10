@@ -120,10 +120,11 @@
 
         <EditText
             android:id="@+id/editTextText9"
-            android:layout_width="320dp"
+            android:layout_width="323dp"
             android:layout_height="wrap_content"
-            android:drawableStart="@drawable/height"
-            android:drawablePadding="15dp"
+            android:drawableStart="@drawable/height1"
+            android:drawablePadding="10dp"
+            android:paddingStart="-7dp"
             android:ems="17"
             android:hint="Height"
             android:inputType="numberDecimal" />
