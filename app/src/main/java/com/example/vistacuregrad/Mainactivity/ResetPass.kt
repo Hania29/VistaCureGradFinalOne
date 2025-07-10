@@ -1,6 +1,5 @@
 package com.example.vistacuregrad.Mainactivity
 
-import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.util.Log
@@ -20,7 +19,6 @@ import com.example.vistacuregrad.viewmodel.ResetPasswordViewModel
 import com.example.vistacuregrad.viewmodel.ResetPasswordViewModelFactory
 import kotlinx.coroutines.launch
 import org.json.JSONObject
-import java.net.URLDecoder
 
 class ResetPass : Fragment() {
 
@@ -45,48 +43,16 @@ class ResetPass : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val deepLink: Uri? = requireActivity().intent?.data
-        if (deepLink != null) {
-            // Get and decode the token from the URL
-            token = deepLink.getQueryParameter("token")?.let {
-                try {
-                    // Decode the URL-encoded token
-                    val decoded = URLDecoder.decode(it, "UTF-8")
-                    Log.d("ResetPassFragment", "Decoded Token: $decoded")
-                    decoded
-                } catch (e: Exception) {
-                    Log.e("ResetPassFragment", "Error decoding token", e)
-                    showToast("Invalid reset link format")
-                    null
-                }
-            }
-            email = deepLink.getQueryParameter("email")?.let {
-                try {
-                    URLDecoder.decode(it, "UTF-8")
-                } catch (e: Exception) {
-                    it // Return original if decoding fails
-                }
-            }
-        } else {
-            arguments?.let { bundle ->
-                token = bundle.getString("token")?.let {
-                    try {
-                        URLDecoder.decode(it, "UTF-8")
-                    } catch (e: Exception) {
-                        Log.e("ResetPassFragment", "Error decoding token from arguments", e)
-                        null
-                    }
-                }
-                email = bundle.getString("email")
-            }
-        }
 
-        // Validate token format
-        if (token.isNullOrEmpty() || token!!.length < 20) {
-            Log.e("ResetPassFragment", "Invalid token format. Length: ${token?.length ?: 0}")
-            showToast("Invalid reset link. Please request a new one.")
+
+        token = resetPasswordViewModel.getResetToken(requireContext()) // Get token from SharedPreferences
+
+
+        if (token.isNullOrEmpty() || email.isNullOrEmpty()) {
+            Log.e("ResetPassFragment", "Missing token or email in arguments")
+            showToast("Invalid reset data. Please try again.")
         } else {
-            Log.d("ResetPassFragment", "Valid token received. First 10 chars: ${token!!.take(10)}...")
+            Log.d("ResetPassFragment", "Token and email received.")
         }
     }
 
@@ -121,19 +87,17 @@ class ResetPass : Fragment() {
 
             if (validateFields(password, confirmPassword, emailInput)) {
                 if (token.isNullOrEmpty()) {
-                    showToast("Invalid or missing token")
-                } else {
-                    isResetting = true
-                    btnDone.isEnabled = false
-                    btnDone.alpha = 0.5f
+                    showToast("Missing reset token")
+                    return@setOnClickListener
+                }
 
-                    lifecycleScope.launch {
-                        Log.d("ResetPassFragment", "Attempting password reset for: $emailInput")
-                        Log.d("ResetPassFragment", "Token being sent (first/last 10 chars): " +
-                                "${token!!.take(10)}...${token!!.takeLast(10)}")
+                isResetting = true
+                btnDone.isEnabled = false
+                btnDone.alpha = 0.5f
 
-                        resetPasswordViewModel.resetPassword(password, confirmPassword, token!!, emailInput)
-                    }
+                lifecycleScope.launch {
+                    Log.d("ResetPassFragment", "Resetting password for $emailInput")
+                    resetPasswordViewModel.resetPassword(password, confirmPassword, token!!, emailInput)
                 }
             }
         }

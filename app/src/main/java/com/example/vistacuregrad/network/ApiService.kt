@@ -90,7 +90,7 @@ interface ApiService {
     suspend fun resetPassword(
         @Field("password") password: String,
         @Field("confirmPassword") confirmPassword: String,
-        @Query("token") token: String,
+        @Header("Authorization") token: String,
         @Field("email") email: String
     ): Response<ResetPasswordResponse>
 

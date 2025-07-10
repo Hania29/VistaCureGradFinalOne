@@ -48,8 +48,8 @@
                 <category android:name="android.intent.category.BROWSABLE" />
 
                 <data
-                    android:scheme="https"
-                    android:host="8721cb405e66.ngrok-free.app/"
+                    android:scheme="vistacure"
+                    android:host="768b7cbb055e.ngrok-free.app"
                     android:pathPrefix="/api/Authentication/ResetPassword" />
             </intent-filter>
 

@@ -1,5 +1,6 @@
 package com.example.vistacuregrad.viewmodel
 
+import android.content.Context
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -23,5 +24,9 @@ class AuthViewModel(private val authRepository: AuthRepository) : ViewModel() {
                 e.printStackTrace()
             }
         }
+    }
+    fun saveResetToken(context: Context, token: String) {
+        val sharedPreferences = context.getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        sharedPreferences.edit().putString("RESET_TOKEN", token).apply()
     }
 }

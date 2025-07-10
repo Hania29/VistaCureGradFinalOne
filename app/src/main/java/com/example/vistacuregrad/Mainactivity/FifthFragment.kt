@@ -75,16 +75,26 @@ class FifthFragment : Fragment() {
     }
 
     private fun observeForgotPasswordResponse() {
-        authViewModel.forgotPasswordResponse.observe(viewLifecycleOwner, Observer { response ->
+        authViewModel.forgotPasswordResponse.observe(viewLifecycleOwner) { response ->
             progressBar.visibility = View.GONE
             if (response.isSuccessful && response.body() != null) {
-                Toast.makeText(requireContext(), response.body()?.message, Toast.LENGTH_LONG).show()
-                findNavController().navigate(R.id.action_fifthFragment_to_resetPass)
+                val responseBody = response.body()!!
+                val token = responseBody.token
+                val email = responseBody.email
+
+                authViewModel.saveResetToken(requireContext(), token) // Save token only
+
+                val bundle = Bundle().apply {
+                    putString("email", email) // Only pass email
+                }
+                findNavController().navigate(R.id.action_fifthFragment_to_resetPass, bundle)
+
             } else {
                 Toast.makeText(requireContext(), "Error: ${response.message()}", Toast.LENGTH_SHORT).show()
             }
-        })
+        }
     }
+
 
     private fun isValidEmail(email: String): Boolean {
         return !TextUtils.isEmpty(email) && Patterns.EMAIL_ADDRESS.matcher(email).matches()

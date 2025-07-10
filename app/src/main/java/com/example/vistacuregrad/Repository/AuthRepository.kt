@@ -94,7 +94,7 @@ class AuthRepository(private val apiService: ApiService) {
         email: String
     ): Response<ResetPasswordResponse> {
         // Don't modify the token here - send it exactly as received
-        return apiService.resetPassword(password, confirmPassword, token, email)
+        return apiService.resetPassword(password, confirmPassword, "Bearer $token", email)
     }
 
 

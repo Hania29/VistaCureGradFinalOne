@@ -11,5 +11,7 @@ data class ForgotPasswordResponse(
     @SerializedName("status")
     val status: String,
     @SerializedName("message")
-    val message: String
+    val message: String,
+    @SerializedName("token") val token: String,
+    @SerializedName("email") val email: String
 )

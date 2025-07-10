@@ -101,20 +101,8 @@
         android:label="fragment_reset_pass"
         tools:layout="@layout/fragment_reset_pass">
 
-        <argument
-            android:name="email"
-            app:argType="string"
-            android:defaultValue="" />
 
-        <argument
-            android:name="token"
-            app:argType="string"
-            android:defaultValue="" />
 
-        <deepLink
-            android:id="@+id/deepLink_resetPass"
-            app:uri="https://8721cb405e66.ngrok-free.app/Authentication/ResetPassword?token={token}"
-            app:action="android.intent.action.F"/>
         <action
             android:id="@+id/action_resetPass_to_seventhFragment"
             app:destination="@id/seventhFragment" />
