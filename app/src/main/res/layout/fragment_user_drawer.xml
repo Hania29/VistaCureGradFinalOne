@@ -5,7 +5,8 @@
     android:id="@+id/userDrawer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UserDrawerFragment">
+    tools:context=".UserDrawerFragment"
+    android:background="@color/BackGround">
 
     <TextView
         android:id="@+id/userprofile_drawer"
