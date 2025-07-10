@@ -1,26 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    >
 
 
     <item
         android:id="@+id/chatBotFragment"
-        android:icon="@drawable/chatbot"
-        android:iconTint="@color/black"
-        android:title="ChatBot">
+        android:icon="@drawable/chatbot_selector"
+        app:itemIconTint="@color/white"
+        android:title="ChatBot"
+        >
 
     </item>
 
     <item
         android:id="@+id/homeFragment"
-        android:icon="@drawable/ourhome"
-        android:iconTint="@color/black"
+        android:icon="@drawable/home_selector"
+        app:itemIconTint="@color/white"
         android:title="Home">
     </item>
     <item
         android:id="@+id/historyFragment"
-        android:icon="@drawable/medfiles"
-        android:iconTint="@color/black"
+        android:icon="@drawable/history_selector"
+        app:itemIconTint="@color/white"
         android:title="History">
 
     </item>

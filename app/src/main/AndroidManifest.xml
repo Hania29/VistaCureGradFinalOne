@@ -20,39 +20,26 @@
         <activity
             android:name="com.example.vistacuregrad.Newactivity.NewActivity"
             android:exported="true">
-
-
+            <!-- Make NewActivity the launcher -->
         </activity>
 
         <activity
             android:name=".Mainactivity.MainActivity"
-            android:exported="true"
-            >
+            android:exported="true">
+            <!-- Remove LAUNCHER intent-filter from here -->
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
-
                 <data
                     android:scheme="vistacure"
                     android:host="768b7cbb055e.ngrok-free.app"
                     android:pathPrefix="/api/Authentication/ResetPassword" />
             </intent-filter>
-
             <nav-graph android:value="@navigation/my_nav"/>
         </activity>
     </application>

@@ -10,7 +10,6 @@ import android.util.Log
 import android.view.MenuItem
 import android.view.View
 import android.widget.Button
-import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.GravityCompat
@@ -56,6 +55,10 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
     private fun setupUI() {
         binding.bottomNavigationView.itemIconTintList = null
+
+        // ✅ Set the default selected item to Home
+        binding.bottomNavigationView.selectedItemId = R.id.homeFragment
+
         binding.materialButtondrawer.setOnClickListener {
             binding.drawerLayout.openDrawer(GravityCompat.START)
         }
@@ -79,12 +82,11 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
     }
 
     private fun showLogoutDialog() {
-        val dialogView = layoutInflater.inflate(R.layout.fragment_logout, null) // Inflate your XML
+        val dialogView = layoutInflater.inflate(R.layout.fragment_logout, null)
         val alertDialog = AlertDialog.Builder(requireContext(), R.style.CustomAlertDialog)
             .setView(dialogView)
             .create()
 
-        // Find views from the custom dialog
         val yesButton = dialogView.findViewById<Button>(R.id.alert_yes)
         val noButton = dialogView.findViewById<Button>(R.id.alert_no)
 
@@ -99,7 +101,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
 
         alertDialog.show()
     }
-
 
     private fun logoutAndRestart() {
         val intent = Intent(requireContext(), MainActivity::class.java)
@@ -132,7 +133,6 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
         }
 
     private fun uploadImage(file: File) {
-        // Get the token from SharedPreferences
         val sharedPreferences = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
         val token = sharedPreferences.getString("ORIGINAL_TOKEN", null)
 
@@ -142,18 +142,14 @@ class HomeFragment : Fragment(R.layout.fragment_home) {
             return
         }
 
-        // Create MultipartBody.Part
         val imagePart = MultipartBody.Part.createFormData(
             "file", file.name, file.asRequestBody("image/*".toMediaTypeOrNull())
         )
 
-        // Show loading state
         binding.detectionResult.text = "Processing image..."
 
-        // Upload with token
         homeViewModel.uploadImage(token, imagePart)
 
-        // Observe the response
         homeViewModel.uploadResponse.observe(viewLifecycleOwner) { response ->
             val message = if (response != null && response.isSuccessful) {
                 val results = response.body()?.results

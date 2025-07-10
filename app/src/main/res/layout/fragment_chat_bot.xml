@@ -139,12 +139,11 @@
         android:layout_width="match_parent"
         android:layout_height="69dp"
         android:layout_gravity="bottom"
-        android:background="@color/bottomnav"
-        app:itemIconSize="25dp"
-        app:itemIconTint="@color/black"
+        android:background="@color/DarkBlueMainTitle"
+        app:itemIconSize="28dp"
+        app:itemIconTint="@color/white"
         app:itemRippleColor="@android:color/transparent"
-        app:itemTextColor="@color/DarkBlueMainTitle"
+        app:itemTextColor="@color/white"
         app:labelVisibilityMode="labeled"
         app:menu="@menu/bottom_nav_menu" />
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
