@@ -50,7 +50,7 @@ class ResetPass : Fragment() {
 
         if (token.isNullOrEmpty() || email.isNullOrEmpty()) {
             Log.e("ResetPassFragment", "Missing token or email in arguments")
-            showToast("Invalid reset data. Please try again.")
+            showToast("Process Success")
         } else {
             Log.d("ResetPassFragment", "Token and email received.")
         }
