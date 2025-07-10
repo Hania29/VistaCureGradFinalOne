@@ -65,7 +65,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="52dp"
-            android:text="Password"
+            android:text="New Password"
             android:textColor="@color/DarkBlueMainTitle"
             android:textSize="24sp"
             android:textStyle="bold"

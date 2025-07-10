@@ -12,6 +12,10 @@ data class OtpResponse(
     @SerializedName("message")
     val message: String,
     @SerializedName("token")
-    val token: String?
+    val token: String?,
+    @SerializedName("userProfileExists")
+    val userProfileExists: Boolean?,
+    @SerializedName("medicalHistoryExists")
+    val medicalHistoryExists: Boolean?
 )
 

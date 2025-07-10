@@ -44,6 +44,9 @@
             android:id="@+id/action_sixthFragment_to_userProfile"
             app:destination="@id/userProfile" />
         <action
+            android:id="@+id/action_sixthFragment_to_medicalHistory"
+            app:destination="@id/medicalHistory" />
+        <action
             android:id="@+id/action_sixthFragment_to_seventhFragment"
             app:destination="@id/seventhFragment" />
     </fragment>

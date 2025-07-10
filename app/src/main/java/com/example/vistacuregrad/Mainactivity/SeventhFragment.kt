@@ -79,7 +79,7 @@ class SeventhFragment : Fragment() {
                 response.body()?.let { body ->
                     if (body.status == "Success" && !body.tempToken.isNullOrEmpty()) {
                         sharedPreferences.edit()
-                            .putString("TOKEN", body.tempToken)
+                            .putString("TEMP_TOKEN", body.tempToken)
                             .apply()
 
                         Log.d("LoginFragment", "Login successful. Token saved. Navigating to OTP screen...")

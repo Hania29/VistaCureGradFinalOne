@@ -1,5 +1,6 @@
 package com.example.vistacuregrad.Mainactivity
 
+import android.content.Context
 import android.os.Bundle
 import android.text.InputType
 import android.text.TextUtils
@@ -62,6 +63,8 @@ class FourthFragment : Fragment() {
         registerViewModel.registerResponse.observe(viewLifecycleOwner, Observer { response ->
             progressBar.visibility = View.GONE
             if (response.isSuccessful) {
+                // Clear any old user data when a new user registers
+                clearOldUserData()
                 Toast.makeText(requireContext(), "Registration Successful", Toast.LENGTH_SHORT).show()
                 findNavController().navigate(R.id.action_fourthFragment_to_seventhFragment)
             } else {
@@ -127,5 +130,21 @@ class FourthFragment : Fragment() {
         }
 
         return true
+    }
+
+    private fun clearOldUserData() {
+        // Clear user profile data
+        val userProfilePrefs = requireContext().getSharedPreferences("UserProfilePrefs", Context.MODE_PRIVATE)
+        userProfilePrefs.edit().clear().apply()
+
+        // Clear medical history data
+        val medicalHistoryPrefs = requireContext().getSharedPreferences("MedicalHistoryPrefs", Context.MODE_PRIVATE)
+        medicalHistoryPrefs.edit().clear().apply()
+
+        // Clear app preferences
+        val appPrefs = requireContext().getSharedPreferences("AppPrefs", Context.MODE_PRIVATE)
+        appPrefs.edit().clear().apply()
+
+        Log.d("FourthFragment", "Cleared old user data for new registration")
     }
 }
