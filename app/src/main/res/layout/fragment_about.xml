@@ -3,7 +3,7 @@
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:padding="16dp"
-    android:background="@color/white">
+    android:background="@color/BackGround">
 
     <!-- Toolbar Layout -->
 
@@ -22,7 +22,7 @@
             android:layout_height="40dp"
             android:layout_marginTop="16dp"
             android:contentDescription="Back"
-            android:src="@drawable/button"
+            android:src="@drawable/baseline_arrow_left_24"
             app:tint="@color/btnback" />
 
         <!-- Logo + Text Layout -->

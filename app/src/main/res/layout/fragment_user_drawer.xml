@@ -15,10 +15,10 @@
         android:layout_marginTop="32dp"
         android:text="User Profile"
         android:textColor="@color/DarkBlueMainTitle"
-        android:textSize="30sp"
+        android:textSize="29dp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.382"
+        app:layout_constraintHorizontal_bias="0.317"
         app:layout_constraintStart_toEndOf="@+id/btnBack"
         app:layout_constraintTop_toTopOf="parent" />
 
