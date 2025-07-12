@@ -134,7 +134,7 @@ class UserProfile : Fragment() {
 
         if (!isValidDate(dateOfBirth)) {
             showToast("Enter a valid date (dd/MM/yyyy)")
-            return false
+
         }
 
         if (rgGender.checkedRadioButtonId == -1) {

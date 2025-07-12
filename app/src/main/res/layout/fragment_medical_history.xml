@@ -218,7 +218,7 @@
         android:background="@drawable/rounded_edittext"
         android:gravity="center_vertical"
         android:hint="Day / Month / Year"
-        android:inputType="date"
+        android:inputType="text"
         android:padding="12dp"
         android:textSize="20sp"
         app:layout_constraintEnd_toEndOf="parent"
